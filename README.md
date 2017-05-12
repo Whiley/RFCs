@@ -55,5 +55,5 @@ and the Whiley Language Specification, etc.
 
 ## Acknowledgements
 
-Inspiration for this RFC process is taken from the RFC processes of
-Pony and Rust.
+Inspiration for this RFC process is taken from the processes used by
+[https://github.com/ponylang/rfcs](Pony) and [https://github.com/rust-lang/rfcs#reviewing-rfcs](Rust).
