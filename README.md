@@ -17,7 +17,7 @@ implemented and, eventually, included in Whiley.
 
 _Creating an RFC_
 
-* **Fork** this repository [http://github.com/Whiley/RFCs](Whiley/RFCs)
+* **Fork** this [RFC repository](http://github.com/Whiley/RFCs)
 * **Copy** `0000-template.md` to `text/0000-my-feature.md`.  Here, 
   `my-feature` should be a descriptive name for the feature.  Don't
   assign an RFC number yet (since this may need to changed later
@@ -56,4 +56,4 @@ and the Whiley Language Specification, etc.
 ## Acknowledgements
 
 Inspiration for this RFC process is taken from the processes used by
-[https://github.com/ponylang/rfcs](Pony) and [https://github.com/rust-lang/rfcs#reviewing-rfcs](Rust).
+[Pony](https://github.com/ponylang/rfcs) and [Rust](https://github.com/rust-lang/rfcs#reviewing-rfcs).
