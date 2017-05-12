@@ -8,6 +8,47 @@ community.
 
 ## When is an RFC needed?
 
+The RFC process should be followed for all "substantial" changes to
+the Whiley language.  What exactly constitutes a "substantial" change
+to the language is somewhat subtle (and subjective).  For example, the
+following changes _would not be_ considered as substantial:
+
+* **Fixes for known bugs in the language (as identified by an
+  issue)**.  A bug typically represents a situation where the
+  implementation of the language differs from the language
+  specification.  In the normal course of events, one would first
+  raise an issue regarding the bug in question.
+* **Minor fixes for or improvements to the documentation of a source
+  file**.  Such changes can likely be accepted as pull requests
+  without issues being raised.
+* **Refactoring of an existing code base (e.g. the Whiley Compiler)
+  without otherwise changing the semantics or syntax of the
+  language**.  Whilst such refactorings can be substantial in nature,
+  they should not affect existing code.  However, of course, in
+  practice such changes must be made in small incremental steps.
+
+In contrast, the following changes _would be_ considered as
+substantial:
+
+* **Changes to the syntax of the language**.  This includes the addition
+  of new syntax, the removal of existing syntax and/or the replacement
+  of existing syntax.  This is important because existing code may no
+  longer compiler after the change.
+* **Changes to the manner in which Whiley source files are accepted (or
+  not) by the compiler**.  For example, the introduction of a new type
+  checking phase, or the modification of an existing phase
+  (e.g. definite assignment).  This is important because existing code
+  may no longer compiler after the change.
+* **Changes to the manner in which compiler Whiley code interfaces with
+  external code (i.e. the Foreign Function Interface)**.  This is
+  important as such a change will affect existing code in a
+  potentially non-trivial fashion.
+
+If in doubt regarding whether a change in substantial or not, one can
+first raise this as an issue on the repository of the respective
+component.  Maintainers of that repository will then provide feedback
+as to whether this requires an RFC or not.
+
 ## The Process
 
 To get a substantial change accepted into the Whiley language, one
@@ -15,7 +56,7 @@ must first get the corresponding RFC merged into this repository as a
 markdown file.  At this point the RFC is "active" and may be
 implemented and, eventually, included in Whiley.
 
-_Creating an RFC_
+The process is as follows:
 
 * **Fork** this [RFC repository](http://github.com/Whiley/RFCs)
 * **Copy** `0000-template.md` to `text/0000-my-feature.md`.  Here, 
