@@ -17,7 +17,7 @@ implemented and, eventually, included in Whiley.
 
 _Creating an RFC_
 
-* **Fork** this [https://github.com/Whiley/RFCs/](RFC repository)
+* **Fork** this repository [http://github.com/Whiley/RFCs](Whiley/RFCs)
 * **Copy** `0000-template.md` to `text/0000-my-feature.md`.  Here, 
   `my-feature` should be a descriptive name for the feature.  Don't
   assign an RFC number yet (since this may need to changed later
