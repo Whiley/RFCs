@@ -1,5 +1,6 @@
 - Feature Name: (use a unique and descriptive name of the form `my_awesome_feature`)
 - Start Date: (put in today's date, `DD-MM-YYYY`)
+- RFC PR: (leave this empty)
 
 # Summary
 
