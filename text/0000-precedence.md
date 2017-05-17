@@ -123,6 +123,24 @@ sensible disambiguation based on standard mathematical precedences.
   which is design to eliminate errors, it seems reasonable that we
   should be strict about potentially ambiguous expressions.
 
+Both of these limitations could be alleviated in a number of ways.  In
+particular:
+
+* **Keyword-based logical
+  connectives**. [Python supports](http://stackoverflow.com/questions/16679272/priority-of-the-logical-statements-not-and-or-in-python)
+  `and` and `or` as keywords for logical connectives alongside `&&`
+  and `||`.  Keywords could be automatically given a different
+  precedence from regular operators.  For example, `((a+(b*5))>c) &&
+  (b<(3*c))` would become `(a+(b*5))>c and b<(3*c)` which is an
+  improvement.
+
+* **Precedence strictness modifier**.  We could additionally include
+  some kind of file-level modifier.  For example, putting something
+  like `precedence whiley.lang.Math` at the top of the file would
+  provide a way to customise operator precedence.  This is nice
+  because it separates precedence out of the core language.  Though,
+  in reality, we would want to discourage its use.
+
 # Unresolved Issues
 
 * **Function Invocation**.  Should function invocation be consider an
