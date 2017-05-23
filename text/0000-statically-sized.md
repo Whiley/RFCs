@@ -136,9 +136,41 @@ etc
 - `char` => `uint:8`
 
 Similar mappings exist for other languages.  For example, a Java `int`
-maps to `int:32` whilst a `long` maps to `int:64`, etc.
+maps to `int:32` whilst a `long` maps to `int:64`, etc.  Likewise, a
+Java `int[]` maps to a `int:32[]`, etc.
 
 ## Implicit Coercions
+
+This proposal treats the status of a type (i.e. statically sized or
+dynamically sized) as a _type modifier_ rather than as a _type_.  This
+has significant implications for the meaning of such types.  For
+example, a variable of type `int:32` can flow into a variable of type
+`int:8` _without the need for an explicit cast_.  The following
+illustrates a valid Whiley function under this proposal:
+
+```
+function abs(int:32 x) -> (uint:32 r)
+ensures r >= 0:
+   //
+   if x >= 0:
+      return x
+   else:
+      return -x
+```
+
+From a typing perspective, this function allows a variable of type
+`int:32` to flow into one of type `uint:32`.  This is clearly unsound
+in an unrestricted fashion.  For example, `-1` is a valid member of
+type `int:32` but not `uint:32`.  Nevertheless, the above program is
+considered valid under this proposal.
+
+The reason the above program is considered valid is that, under
+verification, the constraints imposed by the different integer
+representations are shown to hold.  **In other words, validity of the
+underlying representation depends upon verification.**
+
+**NOTE:** `int[?]` cannot flow into `int[]` ... since this is
+  logically impossible to implement.
 
 ## Verification
 
@@ -162,24 +194,25 @@ Does fixed length array actually have specified length?
 
 # Terminology
 
-In changing the language, it is important to develop a suitable
-"vernacular" for talking about the new aspects of the language.  For
-example, if a new piece of syntax is proposed, then a standard way of
-referring to this should be proposed.  Likewise, if a new phase of the
-compiler is introduced, then suitable terminology for discussing the
-various aspects of this should be developed.
+- **Statically-Sized Type**.  A statically-sized type is one whose
+representation size (in bits) is known at compile time.
+
+- **Dynamically-Sized Type**.  A dynamically-sized type is one whose
+representation size (in bits) is unknown at compile time.
+
+- **Fixed-Length Array**.  A fixed-length array is one whose length (in
+elements) is known at compile time.
+
+- **Unknown-Length Array**.  An unknown-length array is one whose
+  length is unknown either at compile time or runtime.
 
 # Drawbacks and Limitations
 
-This should identify any potential drawbacks or limitations of the
-proposed change.  For example, if the proposed change would break
-existing code, this should be clearly identified.  Likewise, if the
-change could impact upon other proposed changes, this should be
-identified.
+- **Implicit Coercions**.  The flexibility offered by implicit
+  coercions between types of different size presents a potential
+  hazard.  In particular, for programs which are not verified, there
+  is a potential (and silent) _loss of information_.
 
 # Unresolved Issues
 
-List any currently unresolved aspects of the change proposal.  These
-will need to be adequately resolved before the RFC is accepted.
-Identifying these issues provides a way for the author(s) of the RFC
-to leverage the community in finding appropriate solutions.
+None.
