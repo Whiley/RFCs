@@ -78,7 +78,7 @@ to as _statically sized_:
   where `n` is an unsigned numeric constant.  A fixed-length array is
   statically sized if its element type `T` is statically sized.  For a
   fixed-length array `arr` of type `T[n]`, it is implicit that
-  `|arr|==n`.
+  `|arr| == n`.
 - **Unknown-Length Arrays**. The type of _unknown-length_ arrays is
   given by `T[?]`.  Such arrays have a maximum length, but this is
   unknown and the _array length operator_ is defined for such types
@@ -139,7 +139,7 @@ Similar mappings exist for other languages.  For example, a Java `int`
 maps to `int:32` whilst a `long` maps to `int:64`, etc.  Likewise, a
 Java `int[]` maps to a `int:32[]`, etc.
 
-## Implicit Coercions
+## Coercions
 
 This proposal treats the status of a type (i.e. statically sized or
 dynamically sized) as a _type modifier_ rather than as a _type_.  This
@@ -169,28 +169,56 @@ verification, the constraints imposed by the different integer
 representations are shown to hold.  **In other words, validity of the
 underlying representation depends upon verification.**
 
-**NOTE:** `int[?]` cannot flow into `int[]` ... since this is
-  logically impossible to implement.
+As one exception, we note that `int[?]` cannot flow into `int[]` (with
+or without a case).  This is simply because it is logically impossible
+to implement as, at the point we have an instance of `int[?]` _we no
+longer have a length variable_.  However, it is valid for a variable
+`arr` of type `int[?]` to flow into a variable of type `int[n]` (for
+some `n`).  The safety of this relies on the verifier to establish
+that `|arr| == n`.
 
-## Verification
+## Typing
 
-The subtype relationship between types operates in roughly the
-expected fashion.  Specifically:
-
-- **(Rule Int-StaticDynamic)** `int:n` subtypes `int` for all `n`.
-  Likewise, `uint:n` subtypes `uint` for all `n`.
-- **(Rule Int-StaticStatic)** `int:n` subtypes `int:m` if `n <= m`.
-Likewise, `uint:n` subtypes `uint:m` if `n <= m`.
-- **(Rule Int-SignedUnsigned)**.
-
-_Do we need subtyping rules?  Perhaps these are more guidelines for
-information loss?_
-
-# Notes
+Return types for operators
 
 Array length operator returns `usize`.
 
-Does fixed length array actually have specified length?
+## Verification
+
+Whilst coercions between different statically sized types happen
+implicitly at the type level, safety constraints are imposed during
+verification.  We now clarify the constraints imposed, where `x^y`
+is taken to mean `x` to the _power of_ `y` (e.g. `2^4` gives `16`).
+
+- **Signed Integers**.  Values of a signed integer `int:n` should be
+  in the range `-2^(n-1)` to `2^(n-1)-1`.
+
+- **Unsigned Integers**.  Values of an unsigned integer `uint` should
+be in the range `0` to `2^n`.
+
+For a more detailed explanation of these constraints, see the
+Wikipedia page on
+[Two's Complement](https://en.wikipedia.org/wiki/Two%27s_complement).
+As an example, the following program should verify:
+
+```
+function f(int:8 x) -> (int:4 r):
+   if x >= 0 && x <= 7:
+      return x
+   else:
+	  return 0
+```
+
+This verifies primarily because `7 <= 2^(4-1)-1` reduces to `7 <= 7`
+which clearly holds.  In contrast, the following does not verify:
+
+```
+function f(int:8 x) -> (int:4 r):
+   return x
+```
+
+This fails to verify because `2^(8-1)-1 <= 2^(4-1)-1` reduces to `127 <= 7`
+which clearly does not hold.
 
 # Terminology
 
@@ -214,5 +242,8 @@ elements) is known at compile time.
   is a potential (and silent) _loss of information_.
 
 # Unresolved Issues
+
+- Constraints on `usize`.  Do we require some constants to enable
+  interaction with this datatype?
 
 None.
