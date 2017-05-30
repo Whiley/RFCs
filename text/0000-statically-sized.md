@@ -19,7 +19,7 @@ code which employs fixed-sized data types (e.g. `int32` in C).
 
 This proposal addresses the problem of specifying what underlying
 representation a given type should have.  That is, providing a way for
-the programming to dictate in absolute terms what representation
+the programmer to dictate in absolute terms what representation
 should be used.  This allows the programmer to optimise the underlying
 representation as he/she sees fit.  It also enables them to interface
 with foreign code more easily.
@@ -36,7 +36,7 @@ Several alternatives that could be considered to this proposal:
 
 - **Range Analysis**.  Another approach previously explored was the
   use of integer range analysis (see
-  [here](http://homepages.ecs.vuw.ac.nz/~djp/files/SEUS15.pdf)).
+  [this paper](http://homepages.ecs.vuw.ac.nz/~djp/files/SEUS15.pdf)).
   Here, the compiler examines the invariants given on a datatype to
   determine an appropriate representation.  For example, consider a
   type `(int n)` where `n >= 0 && n <= 255`.  The range returned for
@@ -49,7 +49,7 @@ Several alternatives that could be considered to this proposal:
   what range should we return for the constraint `n >= 0 && (n <= 255
   || n < 128)`?  Probably `0 .. 255` makes the most sense here, but
   invariant expressions can be arbitrarily complex and we need a clear
-  and simple mechanism for specifying representation.  Finally, use
+  and simple mechanism for specifying representation.  Finally, using
   range analysis makes interoperation with foreign code more
   challenging.  This is because we may have foreign data types whose
   representation is not minimal for their true invariants.  For
@@ -115,16 +115,15 @@ where some { i in 0..|items| | items[i] == NULL }
 ```
 
 Here, the type `&(uint:8[?])` denotes a reference to an array of
-bytes of unknown length.  The key is that denoting the array as
+bytes of unknown length.  The key is that denoting the array as having
 unknown length affects its underlying representation.  Specifically,
 no length field is stored with the array.  Thus, it can be represented
 as just a sequence of zero or more elements to match the C representation.
 
 The above illustrates the use of the array length operator on an
 unknown-length array in a specification element (i.e. `|items|`).  By
-allowing this operator in specification elements, we enable the
-ability to reason about the array's actual length in an abstract
-sense.
+allowing this operator in specification elements, we can still reason
+about the array's actual length in an abstract sense.
 
 Finally, as an example to illustrate, we can provide the following
 mapping from C99 fixed-width data types:
@@ -170,7 +169,7 @@ representations are shown to hold.  **In other words, validity of the
 underlying representation depends upon verification.**
 
 As one exception, we note that `int[?]` cannot flow into `int[]` (with
-or without a case).  This is simply because it is logically impossible
+or without a cast).  This is simply because it is logically impossible
 to implement as, at the point we have an instance of `int[?]` _we no
 longer have a length variable_.  However, it is valid for a variable
 `arr` of type `int[?]` to flow into a variable of type `int[n]` (for
@@ -179,13 +178,49 @@ that `|arr| == n`.
 
 ## Typing
 
-Return types for operators
+An important question is how expressions involving statically-sized
+data types will be typed.  For example, consider this Whiley program:
 
-Array length operator returns `usize`.
+```
+function sum(int:16 x) -> (int:32 y):
+   return x + 1
+```
+
+What type should be inferred for the expression `x+1`?  There are two
+possible approaches:
+
+- **Forward Propagation.** In this approach, the type of an expression
+  is inferred by determining the worse-case bound on its output.  In
+  the above example, the inferred type would `int:17`.
+- **Backward Propagation.** In this approach, the type of an
+  expression is inferred by from the target location.  That is, the
+  type of the variable into which it will flow.  In the above example,
+  the inferred type would `int:32` as this follows from the return type.
+
+_This proposal does not currently mandate which of these approaches
+should be taken_.  This is because, at this stage, it is unclear what
+effect either of these will have.
+
+Some guidelines regarding typing of expressions (see
+[this paper](http://homepages.ecs.vuw.ac.nz/~djp/files/SEUS15.pdf) for
+more details):
+
+- `operator+(int:n,int m)` produces a result of type `int:(n+m)`.
+- `operator-(int:n,int m)` produces a result of type `int:(n+m)`.
+- `operator*(int:n,int m)` produces a result of type `int:(n*m)`.
+- `operator/(int:n,int m)` produces a result of type `int:n`.
+- `operator%(int:n,int m)` produces a result of type `int:m`.
+- `operator||(T[])` produces a result of type `usize`.
+- `operator[](T[],usize)` produces a result of type `T`.
+
+Further details regarding the typing of operators will need to be
+worked out.  We note the above implies the operands of an operator are
+not required to have the same static size, as this would be quite
+unwieldy.
 
 ## Verification
 
-Whilst coercions between different statically sized types happen
+Whilst coercions between different statically-sized types happen
 implicitly at the type level, safety constraints are imposed during
 verification.  We now clarify the constraints imposed, where `x^y`
 is taken to mean `x` to the _power of_ `y` (e.g. `2^4` gives `16`).
@@ -206,7 +241,7 @@ function f(int:8 x) -> (int:4 r):
    if x >= 0 && x <= 7:
       return x
    else:
-	  return 0
+      return 0
 ```
 
 This verifies primarily because `7 <= 2^(4-1)-1` reduces to `7 <= 7`
@@ -243,7 +278,15 @@ elements) is known at compile time.
 
 # Unresolved Issues
 
-- Constraints on `usize`.  Do we require some constants to enable
-  interaction with this datatype?
+- Constraints on `usize`.  At this time, it's unclear how one can
+  safely verify programs involving types of `usize` as there are no
+  implicit bounds placed on them.  For the case of a variable
+  (e.g. `i`) being used as an index into an array (e.g. `arr`) it is
+  relatively straightforward as we already require `i < |arr|`.
+  Hence, `i` must fit safetly into the type `usize`.  However,
+  consider an expression of the form `x < |arr|` where `x` has some
+  statically sized type `int:n`.  _Should we cast `x` to type `usize`
+  for the comparison?_ This seems questionable since we could lose
+  information.  A clever compiler could spot this and return `false`
+  for the condition, but this is unclear.
 
-None.
