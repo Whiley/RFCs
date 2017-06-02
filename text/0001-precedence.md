@@ -1,6 +1,6 @@
 - Feature Name: operator_precedence
 - Start Date: 13-05-2017
-- RFC PR: (leave this empty)
+- RFC PR: (https://github.com/Whiley/RFCs/pull/1
 
 # Summary
 
