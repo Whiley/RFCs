@@ -4,7 +4,7 @@
 
 # Summary
 
-This proposes the addition of a final modifier which has a similar
+This proposes the addition of a `final` modifier which has a similar
 meaning to that found in Java.
 
 # Motivation
@@ -40,7 +40,7 @@ This is now a proper replacement for `constant` declarations.
 
 ### Ownership
 
-Ownership here refers to the internal mechanism used within a compile
+Ownership here refers to the internal mechanism used within a compiler
 back-end for determining when to clone data.  The following
 illustrates a minimal example:
 
@@ -95,7 +95,7 @@ class Test {
 }
 ```
 
-Without the `final` modifier, the closest type in Whiley for represent
+Without the `final` modifier, the closest type in Whiley for representing
 the type `Test` would be:
 
 ```
@@ -133,9 +133,9 @@ type Test is {
 This representation of class `Test` has the desired effect of
 rendering incorrect the method `broken()` above.
 
-**NOTE:** Whilst Java does not permit assignment to methods, it should
+**NOTE:** Whilst Java does not permit assignment to methods it should
 be noted that other languages, such as JavaScript, do support such
-assignment.
+assignments.
 
 # Technical Details
 
@@ -186,24 +186,140 @@ usage:
 function f(&(final int) p) -> (int r):
    return *p
 ```
-   
+
+### Subtyping
+
+An important question is how subtyping is handled in the presence of
+`final` modifiers.  This is relatively straightforward in that a type
+`final T` is considered distinct from `T` but they are both assignment
+compatible (i.e. subtypes).  Thus, this is considered valid:
+
+```
+final int x = 1
+int y = x
+```
+
+Likewise, the converse is also considered valid:
+```
+int x = 1
+final int y = x
+```
+(there remain some questions as to how to safely deal with memory
+management here)
+
+However, since `final T` is distinct from `T` it follows that this is
+not valid:
+
+```
+&int x = new 1
+&(final int) y = x
+```
+
+And, likewise, that the converse is not valid either.
+
+**NOTE:** an interesting question is whether or not we should be
+permitted to cast over `final`.  For example, whether `&(final int) y
+= (&(final int)) x` should be permitted or not.  Clearly, allowing
+this would break the usage of `final` in the context of a foreign
+function interface (where, in that case, `final` is being used as a
+_capability_).
+
 ### Definite Unassignment Analysis
-Definite Unassignment Analysis to complement the existing concept of
-definite assignment analysis.
+   
+_Definite Unassignment Analysis_ is the process of checking that a
+`final` variable is not assigned.  This complements the existing concept
+of definite assignment analysis.  For example, the following
+fails definite unassignment analysis:
+
+```
+function f(final int x) -> (int r):
+   x = x + 1
+   return x
+```
+
+This should report an error roughly as follows:
+
+```
+test.whiley:2: error: final parameter x may not be assigned
+	x = x + 1;
+	^
+```
+
+(This is the error message given in Java for an attempt to assign to a
+`final` parameter)
+
+An important question is whether or not definite unassignment analysis
+is checked in a _flow insensitive_ or _flow sensitive_ fashion.  For
+example, the following is permitted under a flow sensitive analysis
+but not under an insensitive one:
+
+```
+function f(bool flag) -> (int r):
+   final int y
+   if flag:
+      y = 1
+   else:
+      y = 2
+   return y
+```
+
+The key here is that a flow sensitive analysis can determine variable
+`y` has _exactly one assignment_ regardless of which execution path is
+taken and, hence, that the above is safe.  This is the approach, for
+example, currently taken in Java and is considerably more flexible
+than the flow insensitive approach.
+
+**For the purposes of this proposal, definite unassignment analysis is
+assumed to be a flow insensitive activity**.  This is easier to
+implement that its flow sensitive counterpart.  Furthermore, we can
+update this in a subsequent RFC if a more flexible approach is
+considered useful.
 
 # Terminology
 
 - **Definite Unassignment Analysis**.  This is the process of checking
-  that a variable marked `final` is never assigned after initialisation.
+  that a variable marked `final` is never assigned after
+  initialisation.
+
+- **Flow (In)Sensitive Analysis**.  A flow sensitive analysis can take
+  into consideration the context in which a statement occurs, whilst a
+  flow insensitive analysis cannot.  For the purposes of this
+  proposal, this means a flow sensitive definition unassignment
+  analysis can take into consideration the number of other assignments
+  may have occurred to a given variable prior to the current
+  assignment being considered.
 
 # Drawbacks and Limitations
 
-None.
+- **Backwards Compatibility**.  One obvious issue is that of binary
+  compatibility between different versions of an API.  Consider having
+  released a `public` function or method with a `final` parameter.  If
+  in a subsequence version of that function the given parameter was no
+  longer marked `final`, then this could potentially lead to a hidden
+  linking error.  That is, code compiled against the initial version
+  would still appear to run against the later version, and yet this
+  would clearly be unsafe.  One way to protect against this would be
+  to include the `final` modifier in the name mangle.  Thus, its
+  removal would generate a different mangle and lead to a link-time
+  error.
 
 # Unresolved Issues
 
-- *Ownership*.  The benefits of supporting `final` for reasons of
-  ownership remain somewhat unclear at this stage.  For example, the
-  suggested approach would mean that when assigning a `final` variable
-  to a non-`final` requires a clone.  Yet there are certainly cases
-  where this would lead to unnecessary cloning as well.
+The benefits of supporting `final` for reasons of ownership remain
+somewhat unclear at this stage.  Here are the known issues:
+
+- *Ownership & Cloning*.  The suggested approach to parameters would
+  mean that assigning a `final` parameter to a non-`final` variable
+  requires a clone.  Yet there are certainly some cases where this
+  would lead to unnecessary cloning as well.
+
+- *Ownership & Memory Management*.  In addition, there is the question
+  of memory management.  That is, who is responsible for deallocating
+  a `final` variable?  The suggested approach for `final` parameters
+  would require responsibility to rest with the caller.
+
+An alternative would be to introduce a specific modified
+(e.g. `borrowed`) to handle the issues of ownership that are being
+proposed here to be handled by `final`.  However, that might be
+considered somewhat ugly as we would now have two modifiers instead of
+one.
