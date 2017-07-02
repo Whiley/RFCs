@@ -1,4 +1,4 @@
-- Feature Name: Final Modifier
+- Feature Name: final-modifier
 - Start Date: 02/06/17
 - RFC PR:
 
@@ -84,10 +84,58 @@ The intention here is that the `final` modifier signals to any
 invocation sites that `xs` array will not be modified and, hence, they
 may pass in a _borrowed_ reference to it.
 
-**NOTES:** I don't know whether _partial declarations_ make sense
-  (i.e. for fields and primitive types)
-
 ### Foreign Function Interface
+
+The `final` modifier offers some benefits for the foreign function
+interface.  For example, consider this simple Java class:
+
+```
+class Test {
+  int f(int x) { return x; }
+}
+```
+
+Without the `final` modifier, the closest type in Whiley for represent
+the type `Test` would be:
+
+```
+type Test is {
+  function f(int) -> (int r),
+  ...
+}
+```
+
+**NOTE:** An _open record_ is used to account for subclasses of
+`Test`.  Also, for simplicity, we are ignoring members introduced by
+`Object`, etc.
+
+The problem with the above is that it permits assignment to the field
+`f`.  That is, the following is valid Whiley:
+
+```
+export method broken(&Test t):
+   t.f = &(int x -> x)
+```
+
+This is problematic if we desire the Whiley type `Test` to represent
+actual instances of the Java class `Test`.  Specifically, the problem
+is that actual instances of class `Test` do not support assignment to
+methods.  However, using the `final` modifier we can more accurately
+model class `Test` with the following Whiley type:
+
+```
+type Test is {
+  final function f(int) -> (int r),
+  ...
+}
+```
+
+This representation of class `Test` has the desired effect of
+rendering incorrect the method `broken()` above.
+
+**NOTE:** Whilst Java does not permit assignment to methods, it should
+be noted that other languages, such as JavaScript, do support such
+assignment.
 
 # Technical Details
 
