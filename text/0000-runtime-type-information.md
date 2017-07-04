@@ -47,16 +47,109 @@ For the purposes of this document, we are ignoring the first approach
 above.  This is because: firstly, there are relatively few platforms
 where it makes sense; secondly, it is not generally that efficient.
 
-## Finite Type
+## Finite Types
 
 We begin with the simple case of _finite types_.  A finite type is one
 contains a finite number of _distinct types_.  For example, `int|null`
 is a finite union as it contains two distinct types: `int` and `null`.
-In contrast, `!null` is not finite as it contains an arbitrary number
+In contrast, `!null` is _infinite_ as it contains an arbitrary number
 of distinct types, such as: `int`, `bool`, `{int f1}`, `{int f1, int
 f2}`, etc.
 
-## Infinite Unions
+As expected, a finite type can employ an integer tag for
+distinguishing its members.  This is roughly similar to the concept of
+a [tagged union](https://en.wikipedia.org/wiki/Tagged_union) or
+[sum type](https://www.quora.com/What-is-a-sum-type).  The only real
+difference here from standard approaches is the lack of explicit type
+constructors.  However, we can infer tags based on context to work
+around this.  For example, consider a declaration such as this:
+
+```
+type tagged is T0 | T1 | ... | Tn
+```
+
+Assuming `tagged` is finite, we can begin by allocating each case a
+unique integer tag.  For simplicity, assume the tag for `T0` is `0`,
+for `T1` is `1`, etc.  Then the system can automatically insert tags
+in situations such as the following:
+
+```
+function f(bool flag) -> int|null:
+   if flag:
+      return 1
+   else:
+      return null
+```
+
+At each `return` statement, an implicit coercion is inserted which
+converts the corresponding untagged primitive value into a tagged
+union type.  Whilst this approach is relatively neat, there are
+several challenges to overcome:
+
+- **Retagging**.  Values must be retagged as they transition between
+different unions.  The following illustrates:
+  ```
+  function f(bool flag, int|null val) -> bool|int|null:
+    if flag:
+      return flag
+    else:
+      return val
+  ```
+  At the statement `return val` an implicit coercion is required to
+  _retag_ `val` from type `int|null` to `bool|int|null`.  Based on the
+  scheme outline here this retagging can be achieved (in this case) simply
+  be incrementing the tag value.
+
+- **Overlaps**.  The approach outlined above works well when each case
+  is distinct.  _But, what if they are not distinct?_ With general
+  unions, as found in Whiley, this is possible.  For example, consider
+  this situation:
+
+  ```
+  type Overlap is {int|null x, int y} | {int x, int|null y}
+
+  function createOverlap(int x, int y) -> Overlap:
+    return {x:x, y:y}
+  ```
+	
+  The question is: _what tag should be used here?_ Either tag `0` or
+  `1` are applicable.  A simple solution is to allocate the first
+  applicable tag.  Since we decide what tag to allocate at compile
+  time, this can be done using the subtype operator.
+  
+- **Nested Unions**.  When a union is nested within another union, we
+  can choose to use a single tag or nested tags.  For example,
+  consider this:
+
+  ```
+  type Nested is null | {int|null value}
+
+  function createNested(int|null v) -> Nested:
+    return {value: v}
+  ```
+
+  Since type `Nested` is equivalent to `null|{int value}|{null value}`
+  we could allocate tags based on that expansion.  This means a value
+  of type `Nested` contains only one (outermost) tag.  The advantage
+  of this is that type testing is constant time.  The downside,
+  however, is that this introduces more retagging.  For example, in
+  the above, parameter `v` has an outermost tag value and must retag
+  this at `return` statement.
+
+  The alternative here is to retain nested tags.  Thus, an instance of
+  `Nested` contains two tags:  the outmost tag distinguishes between
+  `null` and `{int|null value}`;  the inner tag is used on field
+  `value` to distinguish between `int` and `null`.  The advantage of
+  this is that assigning to field `value` from a value of type
+  `int|null` does not require retagging.  The downside is that type
+  testing is no longer constant time but, rather, is bounded by the
+  depth of tags required.  That is, for a variable `x` of type
+  `Nested`, a test of the form `x is {int value}` requires checking
+  both outer and inner tags.
+
+- **Arrays**.
+
+## Infinite Types
 
 # Technical Details
 
