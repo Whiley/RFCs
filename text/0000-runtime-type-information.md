@@ -147,9 +147,53 @@ different unions.  The following illustrates:
   `Nested`, a test of the form `x is {int value}` requires checking
   both outer and inner tags.
 
-- **Arrays**.
+- **Arrays**.  For a type such as `(int|null)[]` an interesting
+  question is how the tags should be managed.  Following our logic
+  above for nested unions, the conclusion is that the array itself is
+  not tagged, but each element of the array its tagged.  This seems
+  less than optimal from a performance perspective.  For example,
+  testing whether it is an instance of `int[]` requires checking each
+  element in the array!  However, it's interesting to note that there
+  are only three distinct state that an instance of `(int|null)[]`
+  could have.  Either its an instance of `int[]` (i.e. all elements
+  are `int`), or an instance of `null[]` (i.e. all elements are
+  `null`) or actually an instance of `(int|null)[]` (i.e. contains a
+  mixture of both types).  This suggest an interesting optimisation
+  where an outer tag is used.
+
+Despite these challenges above, it does seem that tagging of finite
+types is doable.
 
 ## Infinite Types
+
+Dealing with infinite types is significantly more challenging than for
+finite types.  We begin by considering the different kinds of infinite
+types:
+
+- **Any**.  The simplest kind of infinite type is one involving `any`.
+  For example, `any`, `{any f}`, `any[]` are all infinite types.
+
+- **Negations**.  The next simplest kind of infinite type is one
+  involving a negation.  With the exception of `!any`, all true
+  negations are infinite types.  For example, `!int`, `!{int f}`,
+  `!(int[])`, are all infinite types.
+
+- **Open Records**.  A surprising example of an infinite type is the
+  open record.  For example, `{int f, ...}` contains an infinite
+  number of subtypes, including `{int f}`, `{int f, int g}`, `{int f,
+  int g, int h}`, etc.
+
+- **Recursive Types**.  Another source of infinite types are recursive
+  types.  In fact, every recursive type is infinite.  For example,
+  type `List` defined as `null | { List next, int data}` contains an
+  infinite number of subtypes, including `null`, `{null next, int
+  data}`, `{ {null next, int data}, int data}`, etc.
+
+The most important point regarding infinite types is that we cannot
+realistically provide a single integer tag to distinguish their
+subtypes.  Therefore, we must provide some other kind of tag to
+distinguish them.  The question then is: _what does this tag look
+like?_
 
 # Technical Details
 
