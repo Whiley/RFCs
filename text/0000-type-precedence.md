@@ -11,21 +11,24 @@ of operator precedence for types.
 Types in Whiley currently require operator precedence rules for
 resolving ambiguities in parsing mixed operator
 expressions. Specifically, the rules determine which operators should
-bind more tightly that others.  The current set of rules are based
-upon those of the Java Language and are defined in the
+bind more tightly that others.  The current set of rules are defined in the
 [Whiley Language Specification](http://whiley.org/download/WhileyLanguageSpec.pdf).
 
 The following illustrates a number of mixed operator types and how
 they are currently disambiguated by the language specification:
 
 - **(Unions and Intersections)**.  The type `int|null&int` must
-  currently be interpreted as `int|(null&int)` rather than `(int|null)&int`.
+  currently be interpreted as `int|(null&int)` rather than
+  `(int|null)&int`.  That is, intersections bind more tightly than
+  unions.
 
 - **(Negations and Unions)**.  The type `!int|null` must currently be
-interpreted as `(!int)|null` rather than `!(int|null)`.
+interpreted as `(!int)|null` rather than `!(int|null)`.  That is,
+negations bind more tightly than unions.
 
 - **(Negations and Intersections)**.  The type `!int&null` must currently be
-interpreted as `(!int)|&null` rather then `!(int&null)`.
+interpreted as `(!int)&null` rather then `!(int&null)`.  That is,
+negations bind more tightly than intersections.
 
 The current rules dictated by the language specification correctly
 disambiguate unions, intersections and negations.  However,
@@ -33,7 +36,8 @@ unfortunately, _they do not correctly disambiguate negation and array
 types_.  The following illustrates:
 
 - **(Negations and Arrays)**.  The type `!int[]` can currently be
-interpreted as either `(!int)[]` or `!(int[])`.
+interpreted as either `(!int)[]` or `!(int[])`.  Note, the compiler
+currently interprets it as `!(int[])`.
 
 Whilst we could simply update the language specification to resolve
 the above ambiguities, this proposal argues that supporting operator
@@ -110,7 +114,8 @@ ArrayType :: = TermType `[` `]`
 
 # Drawbacks and Limitations
 
-None.
+* **Backwards Compatibility**.  Obviously, some existing code will no
+  longer compile.
 
 # Unresolved Issues
 
