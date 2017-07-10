@@ -1,6 +1,6 @@
 - Feature Name: final-modifier
 - Start Date: 02/06/17
-- RFC PR:
+- RFC PR: https://github.com/Whiley/RFCs/pull/5
 
 # Summary
 
