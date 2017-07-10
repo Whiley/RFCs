@@ -1,5 +1,6 @@
 - Feature Name: type_precedence
 - Start Date: 02/07/17
+- RFC PR: https://github.com/Whiley/RFCs/pull/6
 
 # Summary
 
