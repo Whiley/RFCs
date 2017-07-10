@@ -1,5 +1,6 @@
 - Feature Name: statically_sized_types
 - Start Date: 22-05-2017
+- RFC PR: https://github.com/Whiley/RFCs/pull/3
 
 # Summary
 
