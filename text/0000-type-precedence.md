@@ -84,6 +84,8 @@ This proposal updates the syntax for types as follows:
 Type ::= UnionType
     | IntersectionType
     | NegationType
+    | ArrayType
+    | ReferenceType
     | TermType
 
 UnionType ::= TermType ('|' TermType)*
@@ -92,17 +94,16 @@ IntersectionType ::= TermType  ('&' TermType)*
 
 NegationType :: = `!` TermType
 
+ArrayType :: = TermType `[` `]`
+
+ReferenceType :: = `&` TermType
+
 TermType ::= PrimitiveType
 	| RecordType
-	| ReferenceType
 	| NominalType
-	| ArrayType
 	| FunctionType
 	| MethodType
 	| ( Type )
-
-ArrayType :: = TermType `[` `]`
-
 ```
 
 # Terminology
