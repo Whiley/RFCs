@@ -54,6 +54,9 @@ the proposed package structure is:
 In addition, we would image the following additional package in the
 future:
 
+- `std.utf` --- Providing various utilities for working with UTF
+  strings and encodings.
+
 - `std.collections` --- Providing various commonly used data
   structures (e.g. `HashMap`, `ArrayList`, etc).
 
@@ -67,6 +70,12 @@ This package structure more closely aligns with that of
 [C++](https://en.wikipedia.org/wiki/C%2B%2B_Standard_Library),
 [Rust](https://doc.rust-lang.org/std/#modules) and
 [D](https://dlang.org/phobos/).
+
+What is lacking from proposed structure above is support for a wider
+range of file formats.  For example, the D standard library (phobos)
+includes support for `xml`, `json`, `csv`, `zip`, and more.  Whether
+or not such formats should be supported in WySTD remains to considered
+in the future.
 
 # Technical Details
 
