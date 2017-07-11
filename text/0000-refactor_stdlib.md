@@ -64,7 +64,13 @@ future:
   some notion of a `socket` would be most notable.
 
 - `std.fs` --- Providing various filesystem primitives, such as for
-  reading/writing files and listing directories, etc.
+reading/writing files and listing directories, etc.
+
+- `std.time` --- Providing various facilities for accessing the system
+clock, and representing units of measure, etc.
+
+- `std.date` --- Providing various facilities for reasoning about
+  dates and timezones.
 
 This package structure more closely aligns with that of
 [C++](https://en.wikipedia.org/wiki/C%2B%2B_Standard_Library),
