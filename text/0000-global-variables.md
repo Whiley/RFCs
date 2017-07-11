@@ -4,7 +4,7 @@
 # Summary
 
 This proposes the removal of the `constant` declaration and its
-replacement with top-level variable declarations.
+replacement with top-level --- or *static* --- variable declarations.
 
 # Motivation
 
@@ -30,7 +30,9 @@ a separate (and complimentary) proposal we could write the following:
 final int JANUARY = 1
 ```
 
-This is now a proper replacement for `constant` declarations.
+This is now a proper replacement for `constant` declarations.  We note
+that such top-level variable declarations are referred to as _static
+variable declarations_.
 
 # Technical Details
 
@@ -40,15 +42,67 @@ declaration `WhileyFile.Declaration.Constant` will be replaced with
 definition, an initialiser (a future RFC could relax this with
 something equivalent to a `static` block).
 
+## Initialisers
+
+An important question is what form static initialisers are permitted
+to take.  For this purpose, the concept of a _constant expression_ is
+introduced.  That is an expression which can be evaluated at compile
+time.  A constant expression is an expression with the following
+constraints:
+
+- **Purity.** A constant expression must be pure and is not permitted
+  to have side-effects.  This means, amongst other things, that they
+  cannot invoke `method`s, or create state through `new`.
+- **Function Invocation.** A constant expression is not permitted to invoke
+  functions.  This ensures that they can be efficiently evaluated at
+  compile time.
+- **Static Access.** A constant expression may only access static
+  variables which are declared as `final`.  Note that cyclic
+  dependencies are not permitted.
+
+We note that future RFCs may choose to further relax these
+restrictions as necessary.
+
+# Side effects
+
+Another important question is in what context a static variable can be
+accessed.  This proposes the following:
+
+- **Final Statics**.  These are effectively compile-time constants and
+  can be accessed from anywhere.  This includes within `functions` and
+  also as `case` labels.
+
+- **Non-Final Statics**.  These represent global state and, hence,
+  cannot be accessed by any pure expression (e.g. as within a
+  `function`).  In principle, these should be accessible from within a
+  non-pure context, such as within a `method`.  However, at this time,
+  there is not syntax for expressing the `modifies` clause of a method
+  (this will be added separately later).
+
+- **Volatile Statics**.  These represent global state which may be
+  accessed concurrently.  At this time, it is impossible to declare
+  such a static variable (though in the future this may be relaxed).
+  Nevertheless, this proposal states that a non-`final` static cannot
+  be used in a concurrent context unless this is explicitly state
+  through an appropriate modifier (e.g. `volatile).
+
+An important observation from the above is that, under this proposal,
+non-`final` static variables cannot be accessed at all!  In the
+future, this restriction will be relaxed through the use of a
+`modifies` clause or similar.
+
 # Terminology
 
-* *Top-level Variable Declaration*.  This is a variable declaration
-  which may appear at the top level (i.e. without indentation) of a
-  Whiley source file.
+* *Static Variable Declaration*.  This is a variable declaration which
+  may appear at the top level (i.e. without indentation) of a Whiley
+  source file.
 
-* *Pure context*.  An expression or statement which is _functionally_
-  pure.  All statements and expressions within a `function` are pure
+* *Pure Context*.  An expression or statement which is _functionally_ pure.
+  All statements and expressions within a `function` are pure
   contexts.  Likewise, all specification elements are pure contexts.
+
+* *Constant Expression*.  An expression which can be completely
+  evaluated at compile time.
 
 # Drawbacks and Limitations
 
@@ -56,23 +110,4 @@ None.
 
 # Unresolved Issues
 
-Currently, there are two important questions:
-
-* **What are the permitted forms of the right-hand side of a top-level
-  variable declaration?** For example, can we make arbitrary function
-  invocations?  We might choose to permit pure initialisers only.  In
-  the case of `final` variables, we might need to be more restrictive.
-
-* **What is the order of execution for top-level variable
-  initialisers?** If we assume all initialisers are pure contexts then
-  this is less of a problem.  However, it is possible that one
-  initialiser refers to the value of another global variable if that
-  is declared `final`.  In such a context, the evaluation order is
-  important.  Already we have this problem in the context of
-  `constant` declarations.  The requirement is only that the access
-  graph is acyclic.
-
-* **In what context can a global variable be accessed?** Initially,
-  without the `final` modifier, global variables cannot be accessed
-  from anywhere!  With the `final` modifier then they can be accessed
-  from a pure context.
+None.
