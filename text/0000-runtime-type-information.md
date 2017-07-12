@@ -47,6 +47,9 @@ For the purposes of this document, we are ignoring the first approach
 above.  This is because: firstly, there are relatively few platforms
 where it makes sense; secondly, it is not generally that efficient.
 
+
+# Technical Details
+
 ## Finite Types
 
 We begin with the simple case of _finite types_.  A finite type is one
@@ -195,7 +198,11 @@ subtypes.  Therefore, we must provide some other kind of tag to
 distinguish them.  The question then is: _what does this tag look
 like?_
 
-# Technical Details
+# Representation Coercions
+
+A _type representation coercion_ occurs when the underlying
+representation of a type must change as a result of flowing from one
+location into another.
 
 # Terminology
 
@@ -203,15 +210,8 @@ like?_
 
 # Drawbacks and Limitations
 
-This should identify any potential drawbacks or limitations of the
-proposed change.  For example, if the proposed change would break
-existing code, this should be clearly identified.  Likewise, if the
-change could impact upon other proposed changes, this should be
-identified.
+None.
 
 # Unresolved Issues
 
-List any currently unresolved aspects of the change proposal.  These
-will need to be adequately resolved before the RFC is accepted.
-Identifying these issues provides a way for the author(s) of the RFC
-to leverage the community in finding appropriate solutions.
+None.
