@@ -28,9 +28,8 @@ _sequencing_.  The following illustrates the proposed use of the
 sequencing operator, `;`:
 
 ```
-while(i < |items|) {
+while i < |items|:
   j = j + 2 ; i = i + 1
-}
 ```
 
 The sequence operator indicates the end of one statement and the
@@ -45,19 +44,20 @@ lambda expressions.
 # Technical Details
 
 The introduction of the sequencing operator `;` is relatively
-straightforward.  Specifically, we extend the syntax for statements
-with the following:
+straightforward.  We extend the syntax for statements with the
+following:
 
 ```
-SequenceStmt ::= Stmt ';' Stmt
+SequenceStmt ::= SimpleStmt (';' SimpleStmt)+
 ```
 
-Observe that this definition implies that a statement must follow the
+This syntax extension implies that a statement must follow the
 sequencing operator.  Thus, we cannot terminate a statement with ';'
 and then begin a new line (as you can in Java or C).
 
-The proposal allows sequencing between _simple statements_ only.  The
-Whiley Language Specifications defines these as follows:
+The proposed extension above also allows sequencing between _simple
+statements_ only.  The Whiley Language Specifications defines these as
+follows:
 
 _"A simple statement is a statement where control always continues to
 the next statement in sequence. Simple statements do not contain other
