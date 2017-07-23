@@ -1,6 +1,6 @@
 - Feature Name: refactor_stdlib
 - Start Date: `11/07/17`
-- RFC PR: (leave this empty)
+- RFC PR: https://github.com/Whiley/RFCs/pull/7
 
 # Summary
 
