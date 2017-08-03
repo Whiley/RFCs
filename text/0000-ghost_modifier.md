@@ -5,30 +5,33 @@
 # Summary
 
 This proposal introduces the `ghost` modifier for representing state
-required purely for verification.  Such state does not manifest itself
-at runtime.
+required purely for verification.  The intention is that such state
+does not manifest itself at runtime.
 
 # Motivation
 
 Providing explicit support for `ghost` variables seems like a sensible
 choice.  In essence, this is a modifier on variables and fields.  The
-purpose of `ghost` variables it to aid verification, but to be omitted
-from generated code.  The interesting question, is what variables we
+purpose of `ghost` variables are to aid verification but be omitted
+from generated code.  The interesting question is what variables we
 can mark as `ghost` and how exactly we are permitted to use them.
 
 Syntax:
 
 - **Local Variables**.  The easiest use case for `ghost`.
 - **Record Fields**.  This is important to allow complex data structure invariants.
-- **Parameters**.  This may be considered useful for dealing with
-  termination, for example.
+- **Parameters / Returns**.  This may be considered useful for dealing
+  with termination, for example.
 
 Expressions:
 
-- Ghost variables can be used in all `requires` and `ensures` clauses.
-- Ghost variables can be used in all `where` clauses.
-- Ghost variables can always be assigned.
-- Ghost variables can only be used in _pure expressions_ and where the lval is also `ghost`.
+- Ghost variables can only be used in _ghost expressions_.  These are
+  pure expressions which occur in a _ghost-compatible context_.
+- Specification elements (i.e. `requires`, `ensures`, `where` clauses
+  or `assert` / `assume` statement) provide ghost-compatible contexts.
+- An assignment to a ghost variable provides a ghost-compatible
+  context.  This extends to parameter arguments and return values, etc.
+- Ghost variables can always be assigned from pure expressions.
 
 Example:
 
@@ -44,6 +47,10 @@ ensures result >= from:
     return from
 ```
 
+In this example, variable `oFrom` is a ghost variable.  The
+expression `from >= oFrom` is a ghost-expression which is used in a
+ghost-compatible context (i.e. a specification element).
+
 # Technical Details
 
 Following on from
@@ -54,9 +61,9 @@ the language syntax is extended as follows:
 TypeModifier = ... | ghost
 ```
 
-At this stage, there aren't any other modifiers declared.
+_(At the time of writing, there aren't any other modifiers declared.
 Nevertheless, some may be added before this RFC is accepted and are
-represented by `...` above.
+represented by `...` above)_
 
 The syntax extension permits the `ghost` modifier in any situation
 where a variable is declared.  We make some additional comments:
@@ -80,50 +87,61 @@ where a variable is declared.  We make some additional comments:
 
 - **Subtyping**.  A `ghost` type can never be a subtype of a
   non-`ghost` type.  The converse perhaps might be useful in some
-  cases.  For simplicity, this proposal seems mandates there is no
-  subtyping relationship between `ghost` and non-`ghost` types.  A
-  later RFC may choose to relax this if deemed necessary, and there
-  are no hidden issues.
+  cases.  For simplicity, this proposal mandates there is no subtyping
+  relationship between `ghost` and non-`ghost` types.  A later RFC may
+  choose to relax this if deemed necessary, and there are no hidden
+  issues.
 
-Finally, we note that all `ghost` variables must be definitely
-assigned before being referred to.
+- **Definite Assignment**.  All ghost variables must be definitely
+  assigned before being referred to.
 
-## Ghost Checking
-
-Variables of `ghost` type can be used in a number of different
-situations:
-
-- **Specification Elements**.  A variable of `ghost` type can be
-  accessed and manipulated in any specification element
-  (e.g. `requires`, `ensures`, `where` clause or `assert` / `assume`
-  statement).
-
-- **Other Ghost Expressions**.  A `ghost` expression is one which accesses
-  one or more `ghost` variables.  Any `ghost` expression must be
-  assigned to a variable of `ghost` type.
-
-The purpose of *`ghost` checking* is to ensure that all `ghost`
-expressions are used appropriately.  For example, a `ghost` expression
-cannot be used as the conditional of an `if` statement.  Likewise, a
-`ghost` expression cannot be assigned to a variable of non-`ghost` type.
+The purpose of *ghost checking* is to ensure that all ghost variables
+and expressions are used appropriately.  For example, a ghost
+expression cannot be used as the conditional of an `if` statement
+since this is not a ghost compatible context.  Likewise, a ghost
+expression cannot be assigned to a variable of non-`ghost` type, etc.
 
 ## Runtime Assertion Checking
 
-The purpose of runtime assertion checking is to check, at runtime,
-whether the given assertions or specification elements hold.
+The purpose of Runtime Assertion Checking (RAC) is to check, at
+runtime, whether the given assertions or specification elements hold.
+This has implications for how `ghost` variables are represented.
+Consider the following hypothetical example:
+
+```
+function inc(int x, ghost int ub) -> (int r):
+requires x <= ub:
+   //
+   return x + 1
+```
+
+Since the `requires` clause refers to the ghost variable `ub`, we
+cannot simply compile away `ub` as we need its value at runtime.
+Therefore, we assume a distinction between _production_ builds and
+_debug_ builds (i.e. where RAC is enabled).  In this case, we would
+only compile away ghost variables for production builds, but not for
+debug builds.  But, the implication of this is that we cannot have
+code from a debug build interoperating with code from a production
+build (i.e. because in the debug build `inc()` takes two parameters,
+but in the production build it takes only one).
 
 # Terminology
 
+- *Ghost variables*.  A variable or field whose declaration has the
+`ghost` modifier.
+
+- *Ghost Expressions*.  A pure expression involving one or more ghost
+variables.
+
+- *Specification Element*.  An expression used in a `requires`,
+  `ensures`, `where` clause or `assert` / `assume` statement.
+
 # Drawbacks and Limitations
 
-None.
+- **Production vs Debug Builds**.  This proposal results in a strong
+  distinction between production builds (where RAC is disabled) and
+  debug builds (where it is enabled).
 
 # Unresolved Issues
 
-- **Runtime Assertion Checking.** An interesting question is how
-  `ghost` variables are represented in the presence of Runtime
-  Assertion Checking (RAC).  For example, if an assertion of some kind
-  refers to a `ghost` variable then we cannot simply compile away its
-  value.  Furthermore, if we only compile it away when RAC is disabled
-  then we cannot have RAC code interoperating with non-RAC code.  We
-  could consider some implementation strategies to work around this.
+None.
