@@ -4,13 +4,13 @@
 
 # Summary
 
-Proposes a syntax change for fully qualified names to something which
-is more familiar to systems programmers, and also which properly
-distinguishes the "inside" from "outside" of a mode.
+This proposal is for a syntax change to fully-qualified names to
+something more familiar to systems programmers, and which properly
+distinguishes the "inside" versus "outside" of a module.
 
 # Motivation
 
-Currently, fully qualified naming in Whiley follow the syntax of
+Currently, fully qualified naming in Whiley follows the syntax of
 Java. Specifically, we write things like this:
 
 ```
@@ -23,27 +23,27 @@ method main(ascii.string[] args):
    println("World")
 ```
 
-Here, the '.' operator is used to construct _fully-qualified names_ of
-the form 'xxx.yyy.zzz'.  The context in which these are used
+Here, the `.` operator is used to construct _fully-qualified names_ of
+the form `xxx.yyy.zzz`.  The context in which these are used
 determines their meaning.  For example, in the context of an `import`
 statement the path `xxx.yyy.zzz` identifies a _module_
-(e.g. `std.ascii` above) .  In contrast, in the context of an function
-or method invocation (e.g. `io.print()` above) the path identifies an
-_entity_ (i.e. named declaration in some module, such as a `type` or
+(e.g. `std.ascii` above).  However, in the context of a function or
+method invocation (e.g. `io.print()` above) the path identifies an
+_entity_ (i.e. a named declaration in some module, such as a `type` or
 `function`).
 
 The goal of this proposal is two-fold.  Firstly, to properly
-distinguish between a module name and an entity name.  Secondly, to
+distinguish between module names and entity names.  Secondly, to
 provide a syntax which is more familiar to systems programmers
 (e.g. from C++ or Rust backgrounds).
 
 # Technical Details
 
 The proposed syntax for fully qualified names is
-`name/of/module::entity`.  Thus, a module name is always a collection
-of names separated by `/`, whilst a (fully-qualified) entity name is
-always a module name and an entity name separated by `::`.  The above
-example in the proposed syntax would be:
+`name/of/module::entity`.  A module name is a collection of one or
+more identifiers separated by `/`, whilst a (fully-qualified) entity
+name is always a module name and an identifier separated by `::`.  The
+above example in the proposed syntax would be:
 
 ```
 import std/ascii
@@ -55,17 +55,17 @@ method main(ascii::string[] args):
    println("World")
 ```
 
-Here, `/` is used to separate module names over `.` to avoid
-overloading this with the field access operator.  Likewise, `::` is
-adopted because it is familiar to C++ and Rust programmers.
+**NOTES:** The separator `/` is used for module names over `.` to
+avoid overloading this with the field access operator.  Likewise, `::`
+is adopted because it is familiar to C++ and Rust programmers.
 Furthermore, it does provide a useful syntactic spacing between
 modules and names.
 
-One aspect of fully-qualified names is that, in fact, there are both
+One aspect of qualified naming is that, in fact, there are both
 _fully-qualified_ and _partially-qualified_ names.  Thus, `std/io` is
-the fully qualified name of the `io` module.  However, `io::print` is
-a partially qualified name for the 'print' method.  Specifically, it
-is considered partial because it employs an unqualified module name
+the fully qualified name of the `io` module.  In contrast, `io::print`
+is a partially qualified name for the `print` method.  This name is
+considered partial because it employs an _unqualified_ module name
 (i.e. `io` rather than `std/io`).
 
 # Terminology
