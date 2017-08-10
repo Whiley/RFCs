@@ -66,7 +66,19 @@ _fully-qualified_ and _partially-qualified_ names.  Thus, `std/io` is
 the fully qualified name of the `io` module.  In contrast, `io::print`
 is a partially qualified name for the `print` method.  This name is
 considered partial because it employs an _unqualified_ module name
-(i.e. `io` rather than `std/io`).
+(i.e. `io` rather than `std/io`).  It follows from this that one can
+choose to use fully qualified names to avoid `import` statements.  For
+example, we could rewrite the above without `import` statements as
+follows:
+
+```
+method main(std/ascii::string[] args):
+   std/io::print("Hello ")
+   std/io::println("World")
+```
+
+In general, however, the use of fully-qualified names should be
+discouraged in favour of partially qualified names.
 
 # Terminology
 
