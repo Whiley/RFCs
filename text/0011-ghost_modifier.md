@@ -1,6 +1,6 @@
 - Feature Name: `ghost_modifier`
 - Start Date: `24-07-2017`
-- RFC PR:
+- RFC PR: https://github.com/Whiley/RFCs/pull/11
 
 # Summary
 
