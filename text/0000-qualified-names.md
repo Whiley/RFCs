@@ -39,17 +39,17 @@ provide a syntax which is more familiar to systems programmers
 
 # Technical Details
 
-A _qualified name_ is a sequence of identifies separated by `::`
+A _qualified name_ is a sequence of identifiers separated by `::`
 (e.g. `std::ascii`, `std::ascii::to_string`, etc).  A _qualified
 module name_ is a qualified name where the last component identifies
 the _name_ and the preceding components (if any) constitute the
 _path_.  For example, in the module name `std::ascii` it follows that
 `std` is the path, and `ascii` the name.  A _qualified symbol name_ is
 a qualified name where the last component identifies the symbol and
-the preceding components constitute a module name.  For example, in
-the symbol name `std::ascii::to_string` it follows that `std::ascii`
-is the module name, and `to_string` then symbol name.  The above
-example in the proposed syntax would be:
+the preceding components (if any) constitute a module name.  For
+example, in the symbol name `std::ascii::to_string` it follows that
+`std::ascii` is the module name, and `to_string` the symbol name.
+The above example in the proposed syntax would be:
 
 ```
 import std::ascii
@@ -76,7 +76,7 @@ always module names (e.g. in `import std::ascii`, it follows that
 always symbols names (e.g.`std::ascii::to_string()` or
 `std::ascii::DEL`).
 - **Types**.  When used in a type, qualified names are always symbol
-  names (e.g. `ascii:string` and `null|utf8::char)`.
+  names (e.g. `ascii:string` and `null|(utf8::char)`.
 
 Another aspect of qualified naming is that a qualified name can be
 _fully-qualified_ or _partially-qualified_.  For example, `std::io` is
