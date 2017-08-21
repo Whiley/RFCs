@@ -1,6 +1,6 @@
 - Feature Name: `qualified_names`
 - Start Date: `11-08-2017`
-- RFC PR: 
+- RFC PR: https://github.com/Whiley/RFCs/pull/13
 
 # Summary
 
