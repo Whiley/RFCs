@@ -89,7 +89,7 @@ example, we could rewrite the above without `import` statements as
 follows:
 
 ```
-method main(std/ascii::string[] args):
+method main(std::ascii::string[] args):
    std::io::print("Hello ")
    std::io::println("World")
 ```
