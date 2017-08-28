@@ -20,49 +20,121 @@ built.
 # Technical Details
 
 The format presented is a binary file format, and the purpose of this
-document is to clarify the exact representation used.
+document is to clarify the exact representation used.  Various
+primitives are used for representing the overall encoding of a
+syntactic heap, and these are discussed first.
 
-## Preliminaries
+## Bit Streams
 
-Various primitives are used for representing the overall encoding of a
-syntactic heap.
+A _bit stream_ is a sequence of one or more bits of which the first
+bit is referred to as the _Least Significant Bit (LSB)_ and the last
+as the _Most Significant Bit_.  The intuition is that the LSB is
+written first to the stream and the MSB is written last (though in
+practice it depends on how bytes are stored in the underlying medium).
 
-### Fixed-Width Integer Encoding
+For the purposes of this document, we write bit streams with a
+right-to-left layout where the right-most bit is the LSB.  For
+example:
+
+```
+010111100110 >>
+```
+
+The `>>` denotes the start of the stream and, thus, the bit
+immediately to its left is written first.
+
+Bit streams are packaged into _byte streams_ and, where padding is
+required, one or more zero bits are added after the MSB to ensure the
+overall stream is a multiple of eight bits.  After padding, our stream
+above looks as follows:
+
+```
+00000101 11100110 >>
+```
+
+Thus, the byte stream is `05 E6` in hexadecimal where `E6` is the
+first byte written to the stream.
+
+## Fixed-Width Integer Encoding
 
 Fixed width integers are denoted as `un` or `in` where `n` is a given
-number of bits.  For exampled, `u8` represents an unsigned byte.
-Fixed with integers are encoded as is (i.e. without any
-meta-information) in a _big endian format_.  For example, consider
-the following definition:
+number of bits.  For example, `u8` represents an unsigned byte.  Fixed
+with integers are encoded as is (i.e. without any meta-information) in
+a _little endian format_.  For example, consider the following
+definition:
 
 ```
 type Header is { u8 opcode, u16 operands }
 ```
 
-An instance of `Header` is stored in a binary stream as follows:
+An instance of `Header` is stored in a binary stream as follows (which
+reads from right-to-left for convenience):
 
 ```
-+--------+----------------+
-| opcode |    operands    |
-+--------+----------------+
- 0      7 8             23
++----------------+--------+
+|    operands    | opcode |
++----------------+--------+
+ 23             8 7      0
 ```
 
-Here, the first 8 bits represent the `opcode` field, and the remaining
-16 bits represent the operand array.  Here, bit `0` represents the
-_least significant bit_ of the `opcode`.  
+The first 8 bits represent the `opcode` field, and the remaining 16
+bits represent the operand array.  Bit `0` is the _least significant
+bit_ and would be written to the stream first.  Thus, literal
+`{opcode=3,operands=16}` is encoded as the following bit stream:
 
-**FIXME:** how to describe this in terms of bytes?x
+```
+00000000 00010000 00000011 >>
+```
 
-**FIXME:** should be a little endian encoding?
+In hexadecimal, this corresponds with `0x00 0x10 0x03` (remembering
+that the _rightmost_ byte here is written first).
 
-### Variable-Width Integer Encoding
+**FIXME:** physical encoding in `BinaryOutputStream` differs.
 
-LEB128
+## Variable-Width Integer Encoding
 
-### Array Encoding
+The encoding of variable-width integer values shares some similarity
+with the [LEB128](https://en.wikipedia.org/wiki/LEB128) format.  Like
+LEB128, chunks following a little-endian layout.  However, unlike,
+LEB128 each chunk is only four bits in length.
 
-### Padding
+Unsigned integers are denoted by `uv` and are zero extended to the
+nearest multiple of three bits.  Likewise, signed integers are denoted
+by `iv` and are sign-extended to the nearest multiple of three bits.
+Each chunk is then extended to a four bit nibble with a _carry flag_
+as the most significant bit to indicate whether (or not) more nibbles
+follow.  This looks roughly as follows:
+
+```
++----+     +----+----+
+|0???| ... |1???|1???|
++----+     +----+----+
+            7  4 3  0
+```
+
+Payload bits are indicated by `?`, whilst the carry bit is `1' for the
+non-terminating nibble and '0' for the terminating nibble.
+
+As an example, we consider the following alternative definition of
+`Header`:
+
+```
+type Header is { u8 opcode, uv operands }
+```
+
+The literal `{opcode=5, operands=10}` the corresponds to the following
+bitstream:
+
+```
+0001 1010 00000101 >>
+```
+
+The bits representing the `opcode` field are first and form a single
+byte.  The raw bit representation for `operands` is `1010` which
+splits into two chunks `001 010` and extended with carry bits to give
+`0001 1010`.
+
+## Array Encoding
 
 ## Overview
 
