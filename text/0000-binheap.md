@@ -136,11 +136,110 @@ splits into two chunks `001 010` and extended with carry bits to give
 
 ## Array Encoding
 
-## Overview
+Arrays are typically encoded using an explicit length variable.  For
+example, consider the following:
 
-## Item Encoding
+```
+type packet is { u8 len, u8[len] data }
+```
 
-## Data Encoding
+The number of elements in the `data` array is explicitly determined by
+the `len` field.  No packing is used and, hence, the layout goes like
+this:
+
+```
++---+     +---+---+---+
+| n | ... | 1 | 0 |len|
++---+     +---+---+---+
+            16   8   0
+```
+
+Here, elements are indexed from zero and the nth element has index
+`len-1`.  In general, explicit length variables are used as their
+exact type cannot easily be inferred.  Finally, in some cases, a
+constant array length is used (e.g. `u8[8]`) and, hence, no length
+field is encoded.
+
+## Binary Layout
+
+Syntactic items are the fundamental abstraction used in the binary
+heap.  In essence, a binary heap consists of a `header` followed by
+zero or more instances of `item`.  The following clarifies the
+high-level format:
+
+```
+type BinaryHeap is {
+  u8[?] header,
+  uv nItems,
+  SyntacticItem[nItems] items
+}
+```
+
+The `header` field is simply as an arbitrary sequence of bytes.
+Details of the header's contents and length are determined by the
+concrete format being used (e.g. WyIL).  Typically, the header will
+include a magic number and supplementary meta-data.
+
+The `SyntacticItem` provides the main building block of the format.
+Each item may refer to zero or more _operands_ which are themselves
+`SyntacticItems`.  In addition, a `SyntacticItem` may contain a
+payload of zero or more bytes.  The payload is typically used for
+encoding integer and string constants, etc.  The generic format of a
+`SyntacticItem` is defined as follows:
+
+```
+type SyntacticItem is {
+  u8 opcode,
+  u8[?] rest
+}
+```
+
+Here, the number of bytes are determined by the overall `schema` of
+the concrete format.  We define a number concrete examples:
+
+```
+type NarySyntacticItem is {
+  u8 opcode,
+  uv size,
+  uv[size] operands
+}
+```
+
+This defines a `SyntacticItem` which has an arbitrary number of
+operands, but carries no payload.  Likewise, we can define instances
+for opcodes which have a fixed number of operands as follows: 
+
+```
+type UnaryItem is {
+  u8 opcode,
+  uv[1] operands
+}
+type BinaryItem is {
+  u8 opcode,
+  uv[2] operands
+}
+type TernaryItem is {
+  u8 opcode,
+  uv[3] operands
+} 
+```
+
+As another example, we can define `SyntacticItem` which has no
+operands but, instead, carries an arbitrary-sized payload:
+
+```
+type ArbitraryPayloadItem is {
+  u8 opcode,
+  uv len,
+  u8[len] payload
+}
+```
+
+This is a common type for holding arbitrary integer or string
+constants.  At this stage, we have completed our overview of the file
+format.  Many details remain to be fleshed out by concrete
+instantiations.  Nevertheless, they will still follow this high-level
+organisation.
 
 # Terminology
 
