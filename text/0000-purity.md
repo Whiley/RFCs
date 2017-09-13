@@ -133,10 +133,12 @@ runtime has a semantically observable effect.
 
 We now clarify the rules proposed by this RFC:
 
-1. No expression or statement in a function context can dereference
-a variable, invoke a `method` or access a static variable.
+1. No expression or statement in a function context can dereference a
+variable, invoke a `method`, allocate objects via `new` or access a
+static variable.
 
-2. No expression in a functional context can invoke a `method`.
+2. No expression in a functional context can invoke a `method` or
+   allocate objects via `new`.
 
 Observe that, at the time of writing, functional context's are always
 expressions.  Should this be relaxed, then rule (2) should be extended
