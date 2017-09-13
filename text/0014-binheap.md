@@ -1,6 +1,6 @@
 - Feature Name: `binary-heap`
 - Start Date: `29-08-2017`
-- RFC PR:
+- RFC PR: https://github.com/Whiley/RFCs/pull/14
 
 # Summary
 
