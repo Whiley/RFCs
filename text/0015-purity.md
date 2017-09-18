@@ -1,6 +1,6 @@
 - Feature Name: `functional_purity`
 - Start Date: `14-09-2017`
-- RFC PR:
+- RFC PR: https://github.com/Whiley/RFCs/pull/15
 
 # Summary
 
