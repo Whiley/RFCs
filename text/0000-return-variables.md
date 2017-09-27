@@ -49,14 +49,17 @@ function f(int x) -> (int y):
    return y
 ```
 
-This is not unreasonable and we can argue that this may offer some
-potential benefits.  For example, we can imagine that all space for
-variable `y` is allocated in the caller.  Thus, we can avoid
-reallocating space in some case by reusing this preallocated space.
+This is not unreasonable and we can argue it may offer some potential
+benefits.  For example, we can imagine that all space for variable `y`
+is allocated in the caller.  Thus, we can avoid reallocating space in
+some case by reusing this preallocated space.  This would be
+particularly important in the case of fixed-size arrays
+(e.g. `int[8]`) on constrained environments, such as an embedded
+system.
 
 The next question is: _what does it mean to assign to a return
-variable?_ We should note that there are various languages that have
-supported this behaviour, including
+variable?_ We should note that there are various languages that
+support this behaviour, including
 [Pascal](https://en.wikibooks.org/wiki/Pascal_Programming/Syntax_and_functions)
 and Dafny.  In such languages, assigning to return values _is the only
 way to return a value from a function or method_.  As such, it seems
