@@ -53,11 +53,11 @@ where it makes sense; secondly, it is not generally that efficient.
 ## Finite Types
 
 We begin with the simple case of _finite types_.  A finite type is one
-contains a finite number of _distinct types_.  For example, `int|null`
-is a finite union as it contains two distinct types: `int` and `null`.
-In contrast, `!null` is _infinite_ as it contains an arbitrary number
-of distinct types, such as: `int`, `bool`, `{int f1}`, `{int f1, int
-f2}`, etc.
+that contains a finite number of _distinct types_.  For example,
+`int|null` is a finite union as it contains two distinct types: `int`
+and `null`.  In contrast, `!null` is _infinite_ as it contains an
+arbitrary number of distinct types, such as: `int`, `bool`, `{int
+f1}`, `{int f1, int f2}`, etc.
 
 As expected, a finite type can employ an integer tag for
 distinguishing its members.  This is roughly similar to the concept of
@@ -101,7 +101,7 @@ different unions.  The following illustrates:
   At the statement `return val` an implicit coercion is required to
   _retag_ `val` from type `int|null` to `bool|int|null`.  Based on the
   scheme outline here this retagging can be achieved (in this case) simply
-  be incrementing the tag value.
+  by incrementing the tag value.
 
 - **Overlaps**.  The approach outlined above works well when each case
   is distinct.  _But, what if they are not distinct?_ With general
@@ -117,11 +117,11 @@ different unions.  The following illustrates:
 	
   The question is: _what tag should be used here?_ Either tag `0` or
   `1` are applicable.  A simple solution is to allocate the first
-  applicable tag.  Since we decide what tag to allocate at compile
-  time, this can be done using the subtype operator.
+  applicable tag.  A _better_ approach is to report this as an
+  ambiguous coercion.
   
 - **Nested Unions**.  When a union is nested within another union, we
-  can choose to use a single tag or nested tags.  For example,
+  can choose to use a single "top-level" tag or nested tags.  For example,
   consider this:
 
   ```
@@ -137,7 +137,8 @@ different unions.  The following illustrates:
   of this is that type testing is constant time.  The downside,
   however, is that this introduces more retagging.  For example, in
   the above, parameter `v` has an outermost tag value and must retag
-  this at `return` statement.
+  this at `return` statement.  **NOTE:** there are complications here
+  with arrays.
 
   The alternative here is to retain nested tags.  Thus, an instance of
   `Nested` contains two tags:  the outmost tag distinguishes between
@@ -198,15 +199,78 @@ subtypes.  Therefore, we must provide some other kind of tag to
 distinguish them.  The question then is: _what does this tag look
 like?_
 
-# Representation Coercions
+### Concrete Type Tags
 
-A _type representation coercion_ occurs when the underlying
-representation of a type must change as a result of flowing from one
-location into another.
+The ideal tag for infinite types is, of course, a complete
+representation of a type.  This immediately means that *every* type
+can be represented and, in theory at least, distinguished.  The
+problem with this is that a runtime type test `x is T` then becomes a
+subtype test between the tag and `T` _performed at runtime_.  Since
+general subtyping testing in Whiley is expensive, something better is
+needed.
+
+The concept of a _concrete type_ is one simplification of general
+types which could be used for infinte type tagging.  A concrete type
+`CT` has the following syntax
+
+```
+CT ::= null | bool | byte | int | { CT_1 f1 ... CT_n fn } | CT[] | &CT
+```
+
+(we can add `function` and `method` types accordingly)
+
+**NOTE:** Syntax currently broken for arrays as cannot specify array
+  containing e.g. mixed `bool` and `int` values.
+
+The key here is that a concrete type is: _not recursive_; and, _does
+not use type combinators_.  By construction, therefore, it is a tree
+and we can perform subtyping testing efficiently against a general
+type (i.e. against `T` in `x is T`).
+
+Whilst concrete types are good for runtime type testing, there are
+some clear disadvantages.  Specifically, they lead to expensive
+coercions.  Consider the following scenario:
+
+```
+function f({int|null x, int|null y} rec) -> any:
+   return rec
+```
+
+At the point of the return we are transitioning from a finite type to
+an infinite type.  This means we must introduce the necessary runtime
+type information at this point in the form of a concrete type tag.
+_But, how do we determine the right tag?_  This can be done, but only
+by inspecting the actual type of `rec` --- that is, by performing two
+tag tests to see whether it's `{int x, int y}`, `{null x, int y}`,
+etc.
+
+Whilst the computational cost for the above was not too bad, we can
+easily make it arbitrarily expensive as this example shows:
+
+```
+function f(int|null[] items) -> any:
+   return items
+```
+
+The cost here is linear in the number of elements in `items`.  Noting,
+however, that this is actually the same cost as a regular type test.
+
+**NOTE:** To reduce the cost of coercions between finite and infinite
+  types, we need to employ the top-level tag scheme discussed above.
 
 # Terminology
 
-- **Type Tag** or **Concrete Type**.
+- **Type Tag**.  A unit of meta-information provided alongside a
+  concrete value which is used to distinguish different
+  representations of that value.
+
+- **Concrete Type**.  A form of type which is not recursive and does
+  not use any type combinators (i.e. union, intersection, negation).
+
+- **Representation Coercion**.  This occurs when the underlying
+representation of a type must change as a result of flowing from one
+location into another.  **This happens whenever the raw type changes
+between source and sink**.
 
 # Drawbacks and Limitations
 
