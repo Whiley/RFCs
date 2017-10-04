@@ -258,6 +258,26 @@ however, that this is actually the same cost as a regular type test.
 **NOTE:** To reduce the cost of coercions between finite and infinite
   types, we need to employ the top-level tag scheme discussed above.
 
+### Representation Normal Form
+
+Another important problem is arises because of the flexibility in
+representation of types.  Even determining that a type is finite is
+non-trivial, let alone determining the set of cases for tagging.  A
+type like `int|null` is pretty easy to deal with as there are clearly
+two tags required.  But, what about something like `(int|null)&!nat`?
+Clearly, it is a finite type, despite the presence of an
+infinite-sized component (i.e. `!nat`).  _But, how many tags do we
+need for this type?_ Similarly, what about the type `pos|neg` ... do
+we need one or two tags for this?
+
+What seems pretty clear, is that we need some notion of a normal form
+here.  For example, `(int|null)&!nat` becomes `(int&!nat)|(null&!nat)`
+which can be further simplified to just `int|null`.  Likewise,
+`pos|neg` becomes just `int`.  In otherwords, runtime type information
+determines only the underlying representation of types and ignores any
+type invariants involved.  We must separately determine these
+invariants as necessary.
+
 # Terminology
 
 - **Type Tag**.  A unit of meta-information provided alongside a
