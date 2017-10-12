@@ -1,7 +1,6 @@
 - Feature Name: `return_variables`
-- Start Date: (put in today's date, `DD-MM-YYYY`)
-- RFC PR: (leave this empty)
-
+- Start Date: `13-10-17`
+- RFC PR: https://github.com/Whiley/RFCs/pull/16
 # Summary
 
 For some time now, there has been a lack of clarity regarding how
