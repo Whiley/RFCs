@@ -12,19 +12,17 @@ be statically determined.
 
 # Motivation
 
-The presence of presence of true union types
-(i.e. [non-disjoint or untagged unions](https://en.wikipedia.org/wiki/Union_type#Untagged_unions))
-in Whiley is a powerful and expressive feature, compared with the
-alternatives
-(e.g. [disjoint/tagged unions](https://en.wikipedia.org/wiki/Tagged_union),
-or
-[algebraic types](https://en.wikipedia.org/wiki/Algebraic_data_type)).
-However, this flexibility at the source level comes at a price at the
-code generation level.  Specifically, appropriate tags must be
-inferred during code generation.  The following illustrates a common
-scenario:
+The presence of true union types (i.e. [non-disjoint or untagged
+unions](https://en.wikipedia.org/wiki/Union_type#Untagged_unions)) in
+Whiley is a powerful and expressive feature, compared with the
+alternatives (e.g. [disjoint/tagged
+unions](https://en.wikipedia.org/wiki/Tagged_union), or [algebraic
+types](https://en.wikipedia.org/wiki/Algebraic_data_type)).  However,
+this flexibility at the source level comes at a price at the code
+generation level.  Specifically, appropriate tags must be inferred
+during code generation.  The following illustrates a common scenario:
 
-```
+```TypeScript
 type msg is {int kind, int payload}|{int kind, int[] payload}
 
 function msg(int kind, int payload) -> (msg r):
@@ -34,13 +32,14 @@ function msg(int kind, int payload) -> (msg r):
 At the point of the return, an _implicit coercion_ is inserted to
 transform a value of type `{int kind, int payload}` to a value of type
 `msg`.  The latter requires a single tag bit to distinguish the two
-cases.  The code generator can automatically determine that the
-coercion targets the first case from the available type information.
+cases.  In this case, the code generator can automatically determine
+that the coercion targets the first case from the available type
+information.
 
 Whilst the above was relatively straightforward, this is not always
 the case.  Consider this variation on the above:
 
-```
+```TypeScript
 type msg is {int kind, int payload}|{int kind, any payload}
 
 function msg(int kind, int payload) -> (msg r):
@@ -48,12 +47,12 @@ function msg(int kind, int payload) -> (msg r):
 ```
 
 The intuition here might be that the first case is preferred since it
-occupies less space, but the second is provided for general usage.  _In
-the above, it is unclear what the appropriate tag should be_.  This is
-because either case is a valid supertype of `{int kind, int
+occupies less space, but the second is provided for general usage.
+_In the above, it is unclear what the appropriate tag should be_.
+This is because either case is a valid supertype of `{int kind, int
 payload}`.  However, we should note that `{int kind, int payload}` is
-more precise (i.e. is a subtype of) `{int kind, any payload}`.  These
-leads to the first rule of coercions:
+_more precise than_ (i.e. is a subtype of) `{int kind, any payload}`.
+These leads to the first rule of coercions:
 
 **Rule 1:** _Most precise case always preferred._
 
@@ -66,7 +65,7 @@ easily construct examples where neither is more precise than the
 other.  We refer to such situations as requiring _ambiguous
 coercions_.  The following illustrates yet another variant:
 
-```
+```TypeScript
 type msg is {any kind, int payload}|{int kind, any payload}
 
 function msg(int kind, int payload) -> (msg r):
@@ -76,9 +75,9 @@ function msg(int kind, int payload) -> (msg r):
 Again, either case is valid for the return value as `{int kind, int
 payload}` is a subtype of both `{any kind, int payload}` and `{int
 kind, any payload}`.  However, neither of the alternatives is more
-precise than the other.  As such, the code generator cannot statically
-determine an appropriate type tag.  This leads to the second rule of
-coercions:
+precise than the other.  As such, _the code generator cannot
+statically determine an appropriate type tag in this case_.  This
+leads to the second rule of coercions:
 
 **Rule 2:** _Ambiguous coercions are type errors._
 
@@ -96,7 +95,7 @@ it can be easily overcome by inserting an appropriate cast for
 disambiguation.  The following illustrates a corrected version of our
 example:
 
-```
+```TypeScript
 type msg is {any kind, int payload}|{int kind, any payload}
 
 function msg(int kind, int payload) -> (msg r):
@@ -170,11 +169,36 @@ just look for unions.
 
 ## Algorithm
 
-* Like rules for method selection
+The algorithm determining whether or not a coercion is ambiguous
+operates in a similar fashion as to that for resolving method/function
+invocations.  We assume for now a _target type_ of the form `T1 | .. |
+Tn` and a _source type_ `S` (for the expression being coerced).  Then,
+under this RFC, there are two stages:
 
-* Types considered to be in Negation Normal Form.
+1. **Filtering**. The algorithm begins by filtering all candidates
+which are not supertypes of the source type (i.e. where `Ti :> S` does
+not hold).
 
-* Nested unions?
+2. **Selection**.  The algorithm selects all types `Ti` from the
+remaining candidates where no `Tj` exists such that `Ti :> Tj`.
+
+At this point, we have a list of zero or more remaning candidate
+types.  For now, we assume this list is non-empty (i.e. since othewise
+a type error would have occurred).  If the list has exactly one
+element, then the coercion is not ambiguous and we can determine the
+necessary tag information.  If the list has more than one element,
+then we have an ambiguous coercion.
+
+### Disjunctive Normal Form.
+
+* What about `(int|null)&(int|null|bool)`?
+
+* What about nested union types?
+
+### Nominal Types
+
+
+
 
 # Terminology
 
