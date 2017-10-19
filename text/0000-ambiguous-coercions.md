@@ -126,7 +126,7 @@ the scope.
   nesting these within other general types.  A simple variation on the
   above would be:
 
-```
+```TypeScript
 type arr is {any x, int y}[] | {int x, any y}[]
 
 ```
@@ -139,7 +139,7 @@ necessary conditions for ambiguity.
   involve open records in some fashion.  A typical example would be
   something like this:
 
-```
+```TypeScript
 type rec is {int x, ...} | {int y, ...}
 
 function create() -> rec:
@@ -154,7 +154,7 @@ other.
   of a _negation type_ to hide the necessary union.  The following
   reconsiders the above example:
 
-```
+```TypeScript
 type rec is !(!{int x, ...} & !{int y, ...})
 
 function create() -> rec:
@@ -166,6 +166,19 @@ equivalent to the original type `{int x, ...} | {int y, ...}`.  Thus,
 this example is really identical to the above and serves only to
 illustrate that algorithms for detecting ambiguous coercions cannot
 just look for unions.
+
+**Intersections.** A similarly awkward situation arises with
+  intersections.  The following illustrates:
+
+```TypeScript
+type from_t is (int[]|int|null)&(int|bool|null)
+
+function convert(from_t x) -> (int|null y):
+   return x
+```
+
+Here, the type `(int[]|int|null)&(int|bool|null)` simplifies to
+`int|null` and, hence, the above coercion constitutes a _retagging_.
 
 ## Algorithm
 
@@ -185,26 +198,63 @@ remaining candidates where no `Tj` exists such that `Ti :> Tj`.
 At this point, we have a list of zero or more remaning candidate
 types.  For now, we assume this list is non-empty (i.e. since othewise
 a type error would have occurred).  If the list has exactly one
-element, then the coercion is not ambiguous and we can determine the
-necessary tag information.  If the list has more than one element,
-then we have an ambiguous coercion.
+element, then the coercion is **not** ambiguous and we can determine
+the necessary tag information.  If the list has more than one element,
+then we have an **ambiguous coercion**.
 
-### Disjunctive Normal Form.
+We now examine some of the more tricky aspects of the algorithm.
 
-* What about `(int|null)&(int|null|bool)`?
+### Type Representation
+
+The most challenging aspect of the algorithm is the question over how
+exactly types are viewed.  The algorithm assumes that the target type
+is a union type of the form `T1 | ... | Tn`.  But, what about types
+such as `(int|null)&(int|null|bool)` or `!(!int&!null)`?  Both of
+these types are really equivalent to `int|null`.
+
+The obvious solution to the issue here is to first simplify types into
+_Disjunctive Normal Form (DNF)_.  Thus, both
+`(int|null)&(int|null|bool)` and `!(!int&!null)` are automatically
+simplified `int|null`.
 
 * What about nested union types?
 
-### Nominal Types
-
-
-
-
 # Terminology
 
+* **Ambiguous Coercion.** This arises when the compiler is unable to
+    determine a unique target type for a given coercion.
 
 # Drawbacks and Limitations
 
+**Nomihnal Types.** As for function/method selection, the use of
+nominal types should ideally be accounted for.  Specifically, consider
+a situation such as the following:
+
+```TypeScript
+type msg_m1 is {any kind, int payload}
+type msg_m2 is {int kind, any payload}
+
+type msg is msg_m1|msg_m2
+
+function create(msg_m1 x) -> (msg r):
+   return x
+```
+
+In this case, it seems pretty reasonable that this coercion is not
+considered ambiguous.  However, under the algorithm described above,
+it will be.  This same issue currently stands for method/function
+selection when resolving invocations.  Therefore, it will be corrected
+in a subsequent RFC.
 
 # Unresolved Issues
 
+Does this make sense?  It would be treated as an ambiguous coercion
+under this RFC, though perhaps not with subsequent extensions.
+
+```TypeScript
+type pos is (int x) where x > 0
+type neg is (int x) where x < 0
+
+function create(pos x) -> (pos|neg r):
+   return x
+```
