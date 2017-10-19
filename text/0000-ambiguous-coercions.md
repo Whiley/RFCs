@@ -212,12 +212,35 @@ is a union type of the form `T1 | ... | Tn`.  But, what about types
 such as `(int|null)&(int|null|bool)` or `!(!int&!null)`?  Both of
 these types are really equivalent to `int|null`.
 
-The obvious solution to the issue here is to first simplify types into
-_Disjunctive Normal Form (DNF)_.  Thus, both
-`(int|null)&(int|null|bool)` and `!(!int&!null)` are automatically
-simplified `int|null`.
+**DNF.** One solution is to first simplify types into _Disjunctive
+Normal Form (DNF)_.  Thus, both `(int|null)&(int|null|bool)` and
+`!(!int&!null)` are automatically simplified `int|null`.  This still
+raises some questions.
 
-* What about nested union types?
+**Flattening.** The use of DNF seems to help, but it raises questions
+  about the flattening of nested unions.  For example, should
+  `(int|null)|bool` be simplified to `int|null|bool`?  The usual
+  simplification rules would suggest it should.  But, this has
+  implications.  Consider this example:
+
+```TypeScript
+type msg is { int|null value }
+
+function f(int|null x) -> msg:
+   return {value: x}
+```
+
+There are two ways to interpret this.  At first, it might seem as
+though no coercion is necessary here.  Specifically, `x` flows into
+the field `value` directly.  But, under the usual rules of
+simplification, `{int|null value}` would be expanded to `{int
+value}|{null value}`.  In this, we would then be introducing a type
+tag at the return statement.  These alternatives are discussed in
+[RFC#0017](https://github.com/Whiley/RFCs/blob/master/text/0017-runtime-type-information.md)
+and one approach is to have a customised set of simplification rules.
+But, it's not clear how these would work.  For example, how do we
+simplify `({int|null f}[])|(({int f}|{null f})[])`?  Or, perhaps more
+importantly, something like `({int|null f}[])&!(({int f}|{null f})[])`?
 
 # Terminology
 
