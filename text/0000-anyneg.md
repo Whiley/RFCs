@@ -7,13 +7,13 @@
 
 This proposes a simplification of the source-level syntax for Whiley.
 Specifically, the removal of the primitive `any` type and negation
-types from the source-level syntax of Whiley.
+types and the addition of (internal) difference types.
 
 # Motivation
 
-The presence of the so-called infinite types presents some significant
-difficulties for the compilation of Whiley to low-level platforms,
-such as C.  Recalling from
+The presence of the so-called _infinite types_ presents some
+significant challenges for the compilation of Whiley to low-level
+platforms (e.g. C).  Recalling from
 [RFC#0017](https://github.com/Whiley/RFCs/blob/master/text/0017-runtime-type-information.md),
 the infinite types are defined as follows:
 
@@ -36,16 +36,16 @@ the infinite types are defined as follows:
   infinite number of subtypes, including `null`, `{null next, int
   data}`, `{ {null next, int data}, int data}`, etc.
 
-Reducing the number of cases to be considered here would improve
-progress on implementing a wider range of back-ends.  It should be
-noted, furthermore, that the removal of such types does not preclude
-their reintroduction at a later date.
+Reducing the number of cases to be considered would improve progress
+on implementing a wider range of backends.  _It should be noted,
+furthermore, that the removal of such types does not preclude their
+reintroduction at a later date._
 
-This proposal aims to remove the `any` type and negations types
+This proposal aims to remove the `any` type and negation types
 (e.g. `!int`) from the language.  Indeed, the `any` type is rarely
-used in practice and its removal will minimal effect.  In contrast,
-negation types are used extensively for flow typing and, hence, an
-alternative is presented here.
+used in practice and its removal will have minimal effect.  In
+contrast, negation types are used extensively for flow typing and,
+hence, an alternative is presented here.
 
 # Technical Details
 
@@ -114,14 +114,72 @@ This fails to compile with the following error:
 ```
 
 Here, we can clearly see the type computed for `x` on the false branch
-is `((int|null)&!int)`.  For a type test `x is T` where
-`x` has declared type `S` the type of `x` on the false branch is, in
-general, `S&!T`.  This type is a representation of the difference type
-`S - T`.
+is `((int|null)&!int)`.  For a type test `x is T` where `x` has
+declared type `S` the type of `x` on the false branch is, in general,
+`S&!T`.  This type is a representation of the _difference type_ `S -
+T`.
+
+_The downside with general negation types is that they provide more
+functionality than actually required_.  For example, we want to
+support `S&!T` but we also support `S|!T`.  This is problematic as it
+enables alternative representations of `any`, such as `int|!int`.
+This proposal **removes negation types from the Whiley language** and
+replaces them with _internal_ types of the form `S-T`.  Here, internal
+means they cannot be expressed at the source level (though,
+potentially, we might lift this restriction later).  This ensures that
+flow typing is still fully supported as before, but removes a number
+of complex issues regarding types.
+
+## Impact
+
+The impact of removing `any` and negation types is reasonably
+profound.  We can make the following strong(ish) statement:
+
+**OBSERVATION:** _Any type `T` not containing an open record can be
+  reduced to a (potentially simpler) type `S` which does not contain
+  intersection and/or difference types._
+
+This observation is basically stating that we can always reduce a
+general type (ignoring open records for now) to one which only uses
+the union connective.  Some examples:
+
+* `(int|null)&int` gives `int`
+* `(int|null)-int` gives `null`
+* `{int|null f}&{int f}` gives `{int f}`
+* `{int|null f}-{int f}` gives `{null f}`
+* `(int|null|bool)-int` gives `int|bool`
+
+Recursive types are not themselves a problem here.  For example,
+consider these recursive types:
+
+```
+type IntList is null | { IntList next, int data }
+type IntBoolList is null | { IntBoolList next, int|bool data}
+```
+
+Then, the type `IntList&IntBoolList` reduces to `IntList`.  Likewise,
+`{null next, int|null data}&IntList` reduces to `{null next, int
+data}`.  Of course, the algorithm for performing this simplification
+remains somewhat involved.
+
+Finally, the question of _open records_ remains.  For example, the
+type `{int x, ...} - {int x, int y}` cannot be further reduced.  This
+proposal does not address this issue, though it may be address in a
+subsequent RFC.
+
 
 # Terminology
 
+* **Difference Type**.  A type of the form `T-S` represents the set of
+elements represented by `T` less the set represented by `S`
+(i.e. it corresponds to set difference).  For example,
+`(int|null)-int` can be reduced to `int`.
+
 # Drawbacks and Limitations
 
+A small amount of existing code will be broken.
+
 # Unresolved Issues
+
+None.
 
