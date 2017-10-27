@@ -49,18 +49,76 @@ alternative is presented here.
 
 # Technical Details
 
-**Any.** The `any` type is the _top_ type in Whiley's type system and
-  has numerous representations.  For example, `any|any`, `int|!int`,
-  `!(!int&int)`, `!(int&bool)` are all equivalent to `any`.  The
-  removal of the `any` type itself is straightforward.  However, the
+The `any` type is the _top_ type in Whiley's type system and has
+  numerous representations.  For example, `any|any`, `int|!int`,
+  `!(!int&int)`, `!(int&bool)` are all equivalent to `any`.  Thus, the
+  following currently compiles:
+
+```
+function id(any x) -> int|!int:
+	return x
+```
+
+The removal of the `any` type itself is straightforward.  However, the
   removal of those equivalent representations is more involved.  Since
   `void` is already prohibited, we can immediately rule out `!void`.
-  However, we ideally should rule out other types equivalent to `void`
-  (see below).  Unfortunately, the removal of types equivalent to
-  `void` is insufficient.  We must also prevent types of the form
+  Likewise, types equivalent to `void` are also prohibited (see
+  below).  Therefore, we need only prevent types of the form
   `int|!int`.  The simplest way of doing this it to remove negation
-  types (see below).
-  
+  types altogether (see below).
+
+
+## Void Types
+
+The removal of types equivalent to `void` is already required and
+implemented.  For example, the following fails to compile:
+
+```
+type record is { void f }
+```
+
+This produces the following error message:
+
+```
+./test.whiley:1: empty type encountered
+type record is { void f }
+               ^^^^^^^^^^
+```
+
+Likewise, this equivalent form also does not compile:
+
+```
+type record is { (int&!int) f }
+```
+
+## Negation Types
+
+The removal of negation types is more involved because of their
+involvement in flow typing.  The following illustrates the simplest
+example:
+
+```
+function f(int|null x) -> int:
+    if x is int:
+	   return x
+    else:
+	   return x
+```
+
+This fails to compile with the following error:
+
+```
+./test.whiley:5: expected type int, found ((int|null)&!int)
+	   return x
+	          ^
+```
+
+Here, we can clearly see the type computed for `x` on the false branch
+is `((int|null)&!int)`.  For a type test `x is T` where
+`x` has declared type `S` the type of `x` on the false branch is, in
+general, `S&!T`.  This type is a representation of the difference type
+`S - T`.
+
 # Terminology
 
 # Drawbacks and Limitations
