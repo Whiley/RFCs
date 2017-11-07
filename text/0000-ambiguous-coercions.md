@@ -117,23 +117,6 @@ There are a large number of ways in which an ambiguous coercion can
 occur.  The following illustrates a few more cases to give an idea of
 the scope.
 
-
-**Any.** The most common kind of example (such as those discussed
-  above) involves the type `any`.  Such examples require a composite
-  type which has at least two or type positions.  At the time of
-  writing, only records and lambdas meet this requirement.
-  Nevertheless, we can still build arbitrarily complex examples by
-  nesting these within other general types.  A simple variation on the
-  above would be:
-
-```TypeScript
-type arr is {any x, int y}[] | {int x, any y}[]
-
-```
-
-This simply nests record types within an array type to generate the
-necessary conditions for ambiguity.
-
 **Open Records.**  Whilst many examples involve the `any` type, there
   is a class of examples which do not.  Essentially, all of these
   involve open records in some fashion.  A typical example would be
@@ -150,22 +133,22 @@ Again, this coercion is ambiguos as `{int x, int y}` is a subtype of
 both `{int x,...}` and `{int y,...}`, but neither are subtypes of each
 other.
 
-**Negations.** A slightly more insidious approach is through the use
-  of a _negation type_ to hide the necessary union.  The following
-  reconsiders the above example:
+<!-- **Negations.** A slightly more insidious approach is through the use -->
+<!--   of a _negation type_ to hide the necessary union.  The following -->
+<!--   reconsiders the above example: -->
 
-```TypeScript
-type rec is !(!{int x, ...} & !{int y, ...})
+<!-- ```TypeScript -->
+<!-- type rec is !(!{int x, ...} & !{int y, ...}) -->
 
-function create() -> rec:
-	return {x:0, y:0}
-```
+<!-- function create() -> rec: -->
+<!-- 	return {x:0, y:0} -->
+<!-- ``` -->
 
-Observe that `!(!{int x, ...} & !{int y, ...})` is semantically
-equivalent to the original type `{int x, ...} | {int y, ...}`.  Thus,
-this example is really identical to the above and serves only to
-illustrate that algorithms for detecting ambiguous coercions cannot
-just look for unions.
+<!-- Observe that `!(!{int x, ...} & !{int y, ...})` is semantically -->
+<!-- equivalent to the original type `{int x, ...} | {int y, ...}`.  Thus, -->
+<!-- this example is really identical to the above and serves only to -->
+<!-- illustrate that algorithms for detecting ambiguous coercions cannot -->
+<!-- just look for unions. -->
 
 **Intersections.** A similarly awkward situation arises with
   intersections.  The following illustrates:
@@ -185,22 +168,22 @@ Here, the type `(int[]|int|null)&(int|bool|null)` simplifies to
 The algorithm determining whether or not a coercion is ambiguous
 operates in a similar fashion as to that for resolving method/function
 invocations.  We assume for now a _target type_ of the form `T1 | .. |
-Tn` and a _source type_ `S` (for the expression being coerced).  Then,
-under this RFC, there are two stages:
+Tn` and a _source type_ `S1 | .. | Sm` (for the expression being
+coerced).  Then, under this RFC, for each `Sj` there are two stages:
 
 1. **Filtering**. The algorithm begins by filtering all candidates
-which are not supertypes of the source type (i.e. where `Ti :> S` does
-not hold).
+which are not supertypes of the source type (i.e. where `Ti :> Sj` does
+not hold for some `i`).
 
 2. **Selection**.  The algorithm selects all types `Ti` from the
 remaining candidates where no `Tj` exists such that `Ti :> Tj`.
 
-At this point, we have a list of zero or more remaning candidate
-types.  For now, we assume this list is non-empty (i.e. since othewise
-a type error would have occurred).  If the list has exactly one
-element, then the coercion is **not** ambiguous and we can determine
-the necessary tag information.  If the list has more than one element,
-then we have an **ambiguous coercion**.
+At this point, we have a list of zero or more remaning candidate types
+for each `Sj`.  For now, we assume this list is non-empty (i.e. since
+othewise a type error would have occurred).  If the list has exactly
+one element, then the coercion is **not** ambiguous and we can
+determine the necessary tag information.  If the list has more than
+one element, then we have an **ambiguous coercion**.
 
 We now examine some of the more tricky aspects of the algorithm.
 
@@ -209,13 +192,13 @@ We now examine some of the more tricky aspects of the algorithm.
 The most challenging aspect of the algorithm is the question over how
 exactly types are viewed.  The algorithm assumes that the target type
 is a union type of the form `T1 | ... | Tn`.  But, what about types
-such as `(int|null)&(int|null|bool)` or `!(!int&!null)`?  Both of
-these types are really equivalent to `int|null`.
+such as `(int|null)&(int|null|bool)`?  Both of these types are really
+equivalent to `int|null`.
 
 **DNF.** One solution is to first simplify types into _Disjunctive
-Normal Form (DNF)_.  Thus, both `(int|null)&(int|null|bool)` and
-`!(!int&!null)` are automatically simplified `int|null`.  This still
-raises some questions.
+Normal Form (DNF)_.  Thus, `(int|null)&(int|null|bool)` is
+automatically simplified `int|null`.  This still raises some
+questions (e.g. how to deal with recursive types).
 
 **Flattening.** The use of DNF seems to help, but it raises questions
   about the flattening of nested unions.  For example, should
@@ -249,7 +232,7 @@ importantly, something like `({int|null f}[])&!(({int f}|{null f})[])`?
 
 # Drawbacks and Limitations
 
-**Nomihnal Types.** As for function/method selection, the use of
+**Nominal Types.** As for function/method selection, the use of
 nominal types should ideally be accounted for.  Specifically, consider
 a situation such as the following:
 
