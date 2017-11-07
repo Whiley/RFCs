@@ -1,7 +1,8 @@
 - Feature Name: `remove-any-neg`
 - Start Date: `27-10-2017`
-- RFC PR: (leave this empty)
+- RFC PR: https://github.com/Whiley/RFCs/pull/20
 - See Also: [RFC#0017](https://github.com/Whiley/RFCs/blob/master/text/0017-runtime-type-information.md)
+- Tracking Issue: [#827](https://github.com/Whiley/WhileyCompiler/issues/827)
 
 # Summary
 
