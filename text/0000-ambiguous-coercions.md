@@ -371,3 +371,25 @@ selection when resolving invocations.  Therefore, it will be corrected
 in a subsequent RFC.
 
 # Unresolved Issues
+
+**Expansion.** The proposed expansion process is perhaps too coarse-grained?  For
+example, consider this:
+
+```TypeScript
+type Point is {int x, int y}
+type aPoint is Point|{int x, int y}
+
+function f(Point p) -> (aPoint r):
+   return p
+```
+
+Checking `aPoint <~ Point` requires expansion which gives `Point|{int
+x, int y} <~ {int x, int y}`.  This results in an ambiguous coercion
+when it seems like it didn't need to.
+
+**Subtyping**.  The examples above tacitly assume some properties of
+subtyping which are not currently true.  For example, in checking
+`Point|{int x, int y} <~ Point` the assumption is that `Point` is
+somehow more precise that `{int x,int y}`.  Intuitively this makes
+sense, but algorithmically ... _what does it mean?_
+
