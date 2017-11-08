@@ -40,7 +40,7 @@ Whilst the above was relatively straightforward, this is not always
 the case.  Consider this variation on the above:
 
 ```TypeScript
-type msg is {int kind, int payload}|{int kind, any payload}
+type msg is {int kind, int payload}|{int kind, int|null payload}
 
 function msg(int kind, int payload) -> (msg r):
 	return {kind: kind, payload: payload}
@@ -51,7 +51,7 @@ occupies less space, but the second is provided for general usage.
 _In the above, it is unclear what the appropriate tag should be_.
 This is because either case is a valid supertype of `{int kind, int
 payload}`.  However, we should note that `{int kind, int payload}` is
-_more precise than_ (i.e. is a subtype of) `{int kind, any payload}`.
+_more precise than_ (i.e. is a subtype of) `{int kind, int|null payload}`.
 These leads to the first rule of coercions:
 
 **Rule 1:** _Most precise case always preferred._
@@ -66,15 +66,15 @@ other.  We refer to such situations as requiring _ambiguous
 coercions_.  The following illustrates yet another variant:
 
 ```TypeScript
-type msg is {any kind, int payload}|{int kind, any payload}
+type msg is {int|null kind, int payload}|{int kind, int|null payload}
 
 function msg(int kind, int payload) -> (msg r):
 	return {kind: kind, payload: payload}
 ```
 
 Again, either case is valid for the return value as `{int kind, int
-payload}` is a subtype of both `{any kind, int payload}` and `{int
-kind, any payload}`.  However, neither of the alternatives is more
+payload}` is a subtype of both `{int|null kind, int payload}` and `{int
+kind, int|null payload}`.  However, neither of the alternatives is more
 precise than the other.  As such, _the code generator cannot
 statically determine an appropriate type tag in this case_.  This
 leads to the second rule of coercions:
@@ -96,10 +96,10 @@ disambiguation.  The following illustrates a corrected version of our
 example:
 
 ```TypeScript
-type msg is {any kind, int payload}|{int kind, any payload}
+type msg is {int|null kind, int payload}|{int kind, int|null payload}
 
 function msg(int kind, int payload) -> (msg r):
-	return ({int kind, any payload}) {kind: kind, payload: payload}
+	return ({int kind, int|null payload}) {kind: kind, payload: payload}
 ```
 
 At this point, the compiler now has enough information to determine
@@ -117,10 +117,25 @@ There are a large number of ways in which an ambiguous coercion can
 occur.  The following illustrates a few more cases to give an idea of
 the scope.
 
-**Open Records.**  Whilst many examples involve the `any` type, there
-  is a class of examples which do not.  Essentially, all of these
-  involve open records in some fashion.  A typical example would be
-  something like this:
+**Trivially Ambiguous.** The presence of _trivially ambiguous_ union
+  types should be detected and reported as an error.  For example:
+
+```
+type ambiguous is int|int
+```
+
+  In this case, there is no way in which an ambiguous type can be
+  resolved (i.e. even with casting).  Such cases should be reported
+  with an `ambiguous union` error.
+
+**Nested Unions.** Many examples of ambiguous coercions (such as those
+  shown above) arise from the presence of nested unions
+  (e.g. `int|null`) in our example above.
+
+**Open Records.** Whilst many examples involve nested unions, there is
+  a class of examples which do not.  Essentially, all of these involve
+  open records in some fashion.  A typical example would be something
+  like this:
 
 ```TypeScript
 type rec is {int x, ...} | {int y, ...}
@@ -132,23 +147,6 @@ function create() -> rec:
 Again, this coercion is ambiguos as `{int x, int y}` is a subtype of
 both `{int x,...}` and `{int y,...}`, but neither are subtypes of each
 other.
-
-<!-- **Negations.** A slightly more insidious approach is through the use -->
-<!--   of a _negation type_ to hide the necessary union.  The following -->
-<!--   reconsiders the above example: -->
-
-<!-- ```TypeScript -->
-<!-- type rec is !(!{int x, ...} & !{int y, ...}) -->
-
-<!-- function create() -> rec: -->
-<!-- 	return {x:0, y:0} -->
-<!-- ``` -->
-
-<!-- Observe that `!(!{int x, ...} & !{int y, ...})` is semantically -->
-<!-- equivalent to the original type `{int x, ...} | {int y, ...}`.  Thus, -->
-<!-- this example is really identical to the above and serves only to -->
-<!-- illustrate that algorithms for detecting ambiguous coercions cannot -->
-<!-- just look for unions. -->
 
 **Intersections.** A similarly awkward situation arises with
   intersections.  The following illustrates:
