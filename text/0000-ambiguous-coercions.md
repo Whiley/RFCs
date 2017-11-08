@@ -161,67 +161,187 @@ function convert(from_t x) -> (int|null y):
 Here, the type `(int[]|int|null)&(int|bool|null)` simplifies to
 `int|null` and, hence, the above coercion constitutes a _retagging_.
 
+**Recursive.** Whilst these are essentially just variations on those
+  examples above, it's important to take recursive types into account
+  properly.  Here's one artificial example:
+
+```
+type List1 is null|{List1 next, int x, int y}
+type List2 is null|{List2 next, int|bool x, int y}
+type List3 is null|{List3 next, int x, int|bool y}
+
+function f(List1 x) -> (List2|List3 y):
+    return x
+```
+
+This provides the canonical example of how recursive types cause
+ambiguous coercions.  As an aside, the coercion in this case is
+potentially quite expensive as it must retype the entire tree.
+
 ## Algorithm
 
 The algorithm determining whether or not a coercion is ambiguous
 operates in a similar fashion as to that for resolving method/function
-invocations.  We assume for now a _target type_ of the form `T1 | .. |
-Tn` and a _source type_ `S1 | .. | Sm` (for the expression being
-coerced).  Then, under this RFC, for each `Sj` there are two stages:
+invocations.  Specifically, it iteratively expands nominal types until
+either no more expansion is possible, or the coercion has been
+resolved.
 
-1. **Filtering**. The algorithm begins by filtering all candidates
-which are not supertypes of the source type (i.e. where `Ti :> Sj` does
-not hold for some `i`).
+The starting point is the desire to check whether sometype `S` can
+flow unambiguously into another type `T`.  A simple example
+illustrating this would be:
 
-2. **Selection**.  The algorithm selects all types `Ti` from the
-remaining candidates where no `Tj` exists such that `Ti :> Tj`.
-
-At this point, we have a list of zero or more remaning candidate types
-for each `Sj`.  For now, we assume this list is non-empty (i.e. since
-othewise a type error would have occurred).  If the list has exactly
-one element, then the coercion is **not** ambiguous and we can
-determine the necessary tag information.  If the list has more than
-one element, then we have an **ambiguous coercion**.
-
-We now examine some of the more tricky aspects of the algorithm.
-
-### Type Representation
-
-The most challenging aspect of the algorithm is the question over how
-exactly types are viewed.  The algorithm assumes that the target type
-is a union type of the form `T1 | ... | Tn`.  But, what about types
-such as `(int|null)&(int|null|bool)`?  Both of these types are really
-equivalent to `int|null`.
-
-**DNF.** One solution is to first simplify types into _Disjunctive
-Normal Form (DNF)_.  Thus, `(int|null)&(int|null|bool)` is
-automatically simplified `int|null`.  This still raises some
-questions (e.g. how to deal with recursive types).
-
-**Flattening.** The use of DNF seems to help, but it raises questions
-  about the flattening of nested unions.  For example, should
-  `(int|null)|bool` be simplified to `int|null|bool`?  The usual
-  simplification rules would suggest it should.  But, this has
-  implications.  Consider this example:
-
-```TypeScript
-type msg is { int|null value }
-
-function f(int|null x) -> msg:
-   return {value: x}
+```
+function eg(S x) -> (T y):
+   return x
 ```
 
-There are two ways to interpret this.  At first, it might seem as
-though no coercion is necessary here.  Specifically, `x` flows into
-the field `value` directly.  But, under the usual rules of
-simplification, `{int|null value}` would be expanded to `{int
-value}|{null value}`.  In this, we would then be introducing a type
-tag at the return statement.  These alternatives are discussed in
-[RFC#0017](https://github.com/Whiley/RFCs/blob/master/text/0017-runtime-type-information.md)
-and one approach is to have a customised set of simplification rules.
-But, it's not clear how these would work.  For example, how do we
-simplify `({int|null f}[])|(({int f}|{null f})[])`?  Or, perhaps more
-importantly, something like `({int|null f}[])&!(({int f}|{null f})[])`?
+We know that `T :> S` must hold (i.e. `S` is a subtype of `T`), and we
+assume for now that `T <: S` does not hold (intuitively as, otherwise,
+no coercion would be necessary).  We employ `<~` to denote a coercion
+check, as opposed to a subtype check.  We assume that `T` and `S` are
+first _simplified_ (see below for details).  Then, we have four main
+cases:
+
+* **(Untagging)** `T <~ S1 | ... | Sn`.  This case is relatively
+  straightforward as its reduces to `n` independent checks `T <~ S1`,
+  ..., `T <~ Sn`.
+
+* **(Tagging)** `T1 | ... | Tn <~ S` where we assume `S` is not a
+  union (i.e. as this is caught by first case above).  In this case,
+  we determine the most precise case `Ti <: S`.  If no such type
+  exists, then we have an ambiguous coercion.  Otherwise, we proceed
+  to recursively check `Ti <~ S`.
+
+* **(Expansion)** `T <~ S`.  Here, we assume neither `T` not `S` are
+  unions and can be expanded/simplified.  Then, we _expand_
+  `T` to `T'` and `S` to `S'` and check `T' <~ S'` (see below for
+  details of expansion process).
+
+* **(Decomposition)**. `T <~ S`.  Here, we assume `T` and `S` are
+  compatible compound types and we recursively decompose them. For
+  example, `T[] <~ S[]` reduces to `T <~ S`.  Likewise, `{T1 f, T2 g}
+  <~ {S1 f, S2 g}` reduces to `T1 <~ S1` and `T2 <~ S2`.
+
+In addition, we must ensure termination through _coinduction_.  That
+is, if `T <~ S` is encountered whilst checking `T <~ S` then we assume
+no ambiguos coercion.
+
+### Simplification
+
+Simplification is the process of exposing the _constructive_ parts of
+the type by eliminating or pushing down the _non-constructive_ parts
+(i.e. intersections and negations).
+
+Simplifying a type `T` is denoted by `<T>` and there are several
+cases:
+
+* **(Primitives)**.  For example, `<bool>` and `<int>` are already
+simplified.
+
+* **(Compounds)**.  For example, `<T[]>` reduces to `<T>[]` and,
+  likewise, `<{T1 f1, ... Tn fn}>` reduces to `{<T1> f1, ... <Tn>
+  fn}`.
+
+* **(Intersections)**.  An intersection involving a union
+  _distributes_ over that union (e.g. `(int|null)&int` becomes
+  `(int&int)|(null&int)`.  Likewise, intersections over primitives are
+  evaluated (e.g. `int&int` becomes `int` whilst `int&null` becomes
+  `void`).  Finally, intersections over compounds are recursively applied
+  (e.g. `T[] & S[]` becomes `(T&S)[]`).
+
+* **(Differences)**.  An difference involving a union _distributes_
+  over that union (e.g. `(int|null)-int` becomes
+  `(int-int)|(null-int)`.  Likewise, intersections over primitives are
+  evaluated (e.g. `int-int` becomes `void` whilst `int-null` becomes
+  `int`). Finally, differences over compounds are recursively applied
+  (e.g. `T[] - S[]` becomes `(T-S)[]`).
+
+* **(Unions)**.  Here, `void` elements are eliminated
+  (e.g. `void|null` becomes `null`).  _Are they flattened as well?_
+
+Since simplification does not inspect nominal types, this process is
+  guaranteed to terminate.
+
+We now illustrate this process through some examples:
+
+* `(int|null)&int` reduces by distribution to `(int&int)|(null&int)`
+  and then by elimination to `int`.
+
+* `(null|Point)&{int x, int y}` reduces by distribution and
+  elimination to `Point&{int x, int y}` which cannot be further
+  simplified without expansion (see below).
+
+* `{int|null f}&{int f}` reduces to `{(int|null)&int f}` and then by
+  distribution to `{(int&int)|(null&int) f}` and, finally, by
+  elimination to `{int f}`.
+
+* `(int|null)-int` is reduced by distribution to
+  `(int-int)|(null-int)` and, in turn, to `null`.
+
+### Expansion
+
+The expansion process takes a type and (where possible) expands it by
+one level.  The expansion process takes all nominal types at the
+outermost level and replaces them by their definition.  The outermost
+level here includes any type reachable from the root via a type
+combinator.  After expansion, we always further simplify the type by
+pushing through intersections and differences to expose its top-level
+structure.
+
+For example, let's assume these type definitions:
+
+```
+type Point is {int x, int y}
+type nPoint is null|Point
+```
+
+Then, consider the following ambiguous coercion check:
+
+```
+null|Point <~ nPoint
+```
+
+This cannot proceed under the other rules above since the type is not
+of the appropriate form.  Instead, we apply expansion and reduce it to
+the following check:
+
+```
+null|{int x, int y} <~ null|Point
+```
+
+Observe how expansion does not guarantee that all nominal types are
+removed.  However, repeated expansion will eventually terminate
+(i.e. since types are contractive).
+
+## Examples
+
+We now consider some more interesting examples to illustrate some of
+the finer points.  The following does not generate a ambiguous
+coercion error:
+
+```TypeScript
+type pos is (int x) where x > 0
+type neg is (int x) where x < 0
+
+function create(pos x) -> (pos|neg r):
+   return x
+```
+
+The reason for this is that expansion is not applied before a tagging
+operation is determined.  In contrast, this does generate an ambiguous
+coercion error:
+
+```TypeScript
+type pos is (int x) where x > 0
+type neg is (int x) where x < 0
+
+function create(int x) -> (pos|neg r)
+requires x > 0:
+   return x
+```
+   
+The problem here is that `int <: pos` and `int <: neg`, thereby
+leading to the ambiguous coercion.
 
 # Terminology
 
@@ -251,14 +371,3 @@ selection when resolving invocations.  Therefore, it will be corrected
 in a subsequent RFC.
 
 # Unresolved Issues
-
-Does this make sense?  It would be treated as an ambiguous coercion
-under this RFC, though perhaps not with subsequent extensions.
-
-```TypeScript
-type pos is (int x) where x > 0
-type neg is (int x) where x < 0
-
-function create(pos x) -> (pos|neg r):
-   return x
-```
