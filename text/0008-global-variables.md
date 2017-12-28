@@ -1,6 +1,7 @@
 - Feature Name: `global_variables`
 - Start Date: 21/06/17
 - PR: https://github.com/Whiley/RFCs/pull/8
+- Tracking Issue: https://github.com/Whiley/WhileyCompiler/issues/841
 
 # Summary
 
