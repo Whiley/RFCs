@@ -1,6 +1,6 @@
 - Feature Name: `ambiguous_coercions`
 - Start Date: `13-10-17`
-- RFC PR: (leave this empty)
+- RFC PR: https://github.com/Whiley/RFCs/pull/19
 - See also: _([RFC#0017](https://github.com/Whiley/RFCs/blob/master/text/0017-runtime-type-information.md))_
 
 # Summary
