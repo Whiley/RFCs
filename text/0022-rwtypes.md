@@ -1,6 +1,6 @@
 - Feature Name: `readwrite_types`
 - Start Date: `28-12-17`
-- RFC PR:
+- RFC PR: https://github.com/Whiley/RFCs/pull/22
 
 # Summary
 
