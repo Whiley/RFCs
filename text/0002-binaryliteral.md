@@ -1,6 +1,7 @@
 - Feature Name: Binary Literals
 - Start Date: 18/05/17
 - RFC PR: https://github.com/Whiley/RFCs/pull/2
+- Tracking Issue: https://github.com/Whiley/WhileyCompiler/issues/854
 
 # Summary
 
