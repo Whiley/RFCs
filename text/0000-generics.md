@@ -53,8 +53,8 @@ What is needed here is genuine - invariant - parametric polymorphism, i.e a type
 # Technical Details
 
 The following decisions are driven by the niche in which Whiley sits.  I.e. one would have a different answer to the questions for langauges with different goals.  Thus I note here a few characteristics of Whiley that readers will (hopefully) agree with, and which guide the decision making:
-  * Whiley presents as a structurally typed OO language
-  * Whiley is really a hybrid OO-functional language
+  * Whiley presents as a structurally typed imperative language with subtyping of records.
+  * Whiley is really a hybrid imperative/functional language
   * Primitive types remain separate from records in Whiley for performance reasons, both at run-time (as in C et. al.) and at verifiction time (uniquely to Whiley).
   * Whiley's syntax is an amalgum of c-like and python-like.
   * Whiley strongly preferences static checks over run-time checks.
