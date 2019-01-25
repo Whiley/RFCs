@@ -37,7 +37,7 @@ function draw(state in) -> (state out):
   return {xpos = in.xpos + 1, ypos = in.ypos+1}
 ~~~~~
 
-And tha animation is driven with `animate(&draw, {xpos = 0, ypos=0})`
+then the animation is driven with `animate(&draw, {xpos = 0, ypos=0})`
 
 However, this program won't draw anything until the whole animation is completed.  To actually implment a real animation we must use some feature of the underlying machine on which we are running to call `draw` once, then schedule (after the frame has been drawn to the screen) the next call to `draw`.  This is simple enough in each of the back-ends that Whiley supports (Java and Javascript) but is different for each.  There is no Whiley primitives to support describing this once in Whiley and then compiling it to different back-ends.
 
@@ -59,7 +59,7 @@ The following decisions are driven by the niche in which Whiley sits.  I.e. one 
   * Whiley's syntax is an amalgum of c-like and python-like.
   * Whiley strongly preferences static checks over run-time checks.
 
-A consideration of generics must also consider if they apply at the function level only, or at the module level as well.  We address only the function level on the basis that the Whiley module system in underdeveloped at the moment.
+A consideration of generics must also consider if they apply at the function level only, or at the module level as well.  We address only the function level on the basis that the Whiley module system in under-developed at the moment.
 
 ## Syntactic Changes
 
@@ -67,7 +67,7 @@ Generics require syntax for the introduction of a type variable (type abstractio
 
 ### Type abstraction
 
-We propose taht all functions and methods _may_ have a set of type parameters in addition to their value parameters.  These are defined between pointy brackets and no kinds are given.  I.e. a function `foo` taking two generic parameters and then a value parameter for each will be written as
+We propose that all functions and methods _may_ have a set of type parameters in addition to their value parameters.  These are defined between pointy brackets and no kinds are given.  I.e. a function `foo` taking two generic parameters and then a value parameter for each will be written as
 
 ~~~~~
 function foo<T,P>(T paramOne, P paramTwo) -> (T ret):
@@ -85,7 +85,7 @@ Alternatives that were considered and the reasons they were rejected are:
 
 ### Type application.
 
-The syntax for type application flows fairly directly from the decision above.  A call to `foo` would require both type parameters to be instantiated with statically-known types at the call-site and then matching value parameters to be immidiately given.
+The syntax for type application flows fairly directly from the decision above.  A call to `foo` would require both type parameters to be instantiated with _statically-known_ types at the call-site and then matching value parameters to be immidiately given.
 
 ~~~~~
 foo<int, char>(5, 'c')
@@ -152,11 +152,11 @@ If there is already an identical function built from a pending generic (not user
 
 ### Foreign functions
 
-This style of compile-time (and macro-like) implementation of generics has some known weaknesses, in particular separate compilation is not possible for generic definitions.  Generic functions are not functions, thus they cannot be compiled.  The compiler can't know how much memory to set aside or exactly what operations to call for overloader operations.  Only the instantiations can be compiled.  C++ has the same problem and the solutions there are not particularly elegant.  However, only lanuages with either a top-type or run-time support for generics can do better and neither of these are suitable for Whiley.  Thus, we live this this problem.
+This style of compile-time (and macro-like) implementation of generics has some known weaknesses, in particular separate compilation is not possible for generic definitions.  Generic functions are not functions, thus they cannot be compiled.  The compiler can't know how much memory to set aside or exactly what operations to call for overloader operations.  Only the instantiations can be compiled.  C++ has the same problem and the solutions there are not particularly elegant.  However, only lanuages with either a top-type or run-time support for generics can do better and neither of these are suitable for Whiley.
 
 More seriously though, this also precludes generic foreign functions, clearly a problem for us since that is exactly the use-case that has motivated this RFC!
 
-I propose an extension, that I have not seen elsewhere, to support foreign generic functions.  In short, foreign generic functions are not expanded, not converted, and the type information in the generic application is used only for type checking.  This means that it is the responsibility of a foriegn function to ensure it can work on any value it may be passed.  This is not an undue burdon for the added functionality because foreign functions are effectively part of the run time and thus the writer is keenly aware of what possbile run-time types it will see.  Notice also that generics here are invariant only - i.e. we don't have examples where anything other than an equality operator is expected to be available in the body of the generic functions.  This restriction is vital to making this work and were bounded generics available in the language, only unbounded generics should be supported on foreign generic definitions.
+I propose an extension, that I have not seen elsewhere, to support foreign generic functions.  In short, foreign generic functions are not expanded, not converted, and the type information in the generic application is used only for type checking.  This means that it is the responsibility of a foreign function to ensure it can work on any value it may be passed.  This is not an undue burdon for the added functionality because foreign functions are effectively part of the run time and thus the writer is keenly aware of what possbile run-time types it will see.  Notice also that generics here are invariant only - i.e. we don't have examples where anything other than an equality operator is expected to be available in the body of the generic functions.  This restriction is vital to making this work and were bounded generics available in the language, only unbounded generics should be supported on foreign generic definitions.
 
 ## Compiler Changes
 
@@ -185,7 +185,7 @@ I.e. we build a substitution for each generic parameter, apply that substitution
 
 ## Run-time Changes
 
-A convention for the nameing of generic foreign functions will be required.  At the moment their types are added to their names but those can't be known for generic functions.
+A convention for the naming of generic foreign functions will be required.  At the moment their types are added to their names but those can't be known for generic functions.
 
 # Terminology
 
@@ -193,10 +193,10 @@ A convention for the nameing of generic foreign functions will be required.  At 
   * **Generic Method Type/Generic Function Type:**  Any function or method type with at least one generic paramter
   * **Generic Arity:** The number of generic parameters required for a generic method or function.  Zero for normal methods and functions
   * **Generic Expansion:** The compile time operation that converts uses of generic functions/methods into their instatiation and use.
-  * **Generic Instantiation:** The non-genric instantiation (i.e. the normal function) that results from generic expansion.
+  * **Generic Instantiation:** The non-generic instantiation (i.e. the normal function) that results from generic expansion.
   * **Type Abstraction:** The `<G,H>` part of a function/method signature
   * **Type Application:** The `<G,H>` part of a function/method call
-  * **Generic Foreign Fucntion:** Any foreign function with a generic arity greater than 0.
+  * **Generic Foreign Function:** Any foreign function with a generic arity greater than 0.
 
 # Drawbacks and Limitations
 
