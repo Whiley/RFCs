@@ -68,11 +68,11 @@ Templates require syntax for the introduction of a type variable (type abstracti
 
 ### Template Declaration
 
-We propose that all properties, functions, methods and types _may_ have a set of type parameters in the form of a template declaration.  These are defined using the syntax `template <T1,..,Tn>` for arbitrarily many types `Tk`.  For example, a template function `foo` with two type parameters will be written as
+We propose that all properties, functions, methods and types _may_ have a set of type parameters in the form of a template declaration.  These are defined using the syntax `template <T1,..,Tn>` for arbitrarily many types `Tk`.  For example, a template type `pair` with two type parameters will be written as
 
 ~~~~~
-template<T,P>
-function foo(T paramOne, P paramTwo) -> (T ret):
+template<S,T>
+type pair is {S first, T second}
 ~~~~~
 
 The justification for this syntax is:
