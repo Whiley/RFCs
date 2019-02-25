@@ -1,6 +1,6 @@
-- Templates
-- 20-12-2018
-- RFC PR: (leave this empty)
+- Feature Name: `templates`
+- Date: `20-12-2018`
+- RFC PR: https://github.com/Whiley/RFCs/pull/24
 - Authors: @altmattr @DavePearce
 
 # Summary
