@@ -31,9 +31,9 @@ underlying type of `x` (i.e. `int`) is a subtype of the underlying
 type of `nat` (also `int`).  It then defers checking the `if`
 condition meets the `nat` condition to the verifier.
 
-A key underlying principle of the above is that, even without the
-verifier, we can using runtime checking when the implicit coercions
-arise.  **However, there be dragons here.**
+A key underlying principle should be that, even without the verifier,
+we can use runtime checking when the implicit coercions arise.
+**However, there be dragons here.**
 
 ### Callables
 
@@ -51,7 +51,8 @@ function f() -> fun_t:
 ```
 
 This currently compiles but, in fact, is not type safe.  Furthermore,
-there is no way for us to check this at runtime.
+there is no way for us to check this at runtime (i.e. because we
+cannot inspect the implementation of a function).
 
 ### References
 
@@ -75,13 +76,13 @@ method main():
    *x = -1
 ```
 
-Again, this is legitamate code which does compile but whose invariants
+Again, this is legitimate code which does compile but whose invariants
 cannot easily be checked at runtime (though can be checked by the
 verifier).
 
 ### Type Tests
 
-Runtime type tests in Whiley represent another whole class of
+Runtime type tests in Whiley represent another class of related
 problems.  For a type test `x is T` where `x` has type `S`, the only
 current requirement is that `T&S != 0` for the type test to be
 considered valid.  Some problematic examples:
@@ -97,8 +98,8 @@ function f(fint_t|null xs) -> (int r):
       return 0
 ```
 
-This example is particularly problematic because it must be possible
-to evaluate a type test!  Likewise, a similar example for references
+This example is particularly problematic because there is no way to
+evaluate this type test!  Likewise, a similar example for references
 can easily be constructed.
 
 Another problematic scenario with runtime type tests is the extraction
@@ -188,10 +189,12 @@ function abs(int x) -> (nat r):
      return (nat) -x
 ```
 
-Casting is used to indicate an unchecked property requires
-verification to be type safe.  Casting may also be used to signal
-certain coercions are required (e.g. from one function type to
-another, or from a closed record to an open record).
+Type checking of casts requires a _non-strict_ subtyping operator
+(i.e. one which operates on the underlying type).  Casting is used to
+indicate an unchecked property requires verification to be type safe.
+Casting may also be used to signal certain coercions are required
+(e.g. from one function type to another, or from a closed record to an
+open record).
 
 ### Runtime Type Tests
 
@@ -212,17 +215,16 @@ function check(bnat x) -> (bool r):
 The type system now correctly concludes that `x` has type bool at the
 `return` statement.  Treatment of type selection is made as precise as
 possible.  A type `T` _strictly subtypes_ another type `S` when `T <:
-S` and. furthermore, `T` is constrained (i.e. has an invariant).
+S` and, furthermore, `T` is constrained (i.e. has an invariant).
 Thus, `S - T = 0` only when `S` is _equivalent_ to `T` (i.e. when `S
 <: T` and `T <: S`).
 
 # Terminology
 
 * _Underlying Type_.  Given a declaration `type T is (S x)`, we say
-  that `S` is the _underlying type_ of `T`.
-
-Observe that we are reusing the old terminology here, though that was
-never well defined in the first place.
+  that `S` _underlies_ `T`.  Types form trees according to this
+  relation, and the roots of those those trees are _the_ so-called
+  underlying types.
 
 # Limitations
 
