@@ -36,7 +36,7 @@ import * from std::ascii
 However, it is often the case that we want to import several names
 from a module, but prefer not to import all names.  This can arise,
 for example, if there is a name clash between modules.  In such case,
-we must import then individually as follows:
+we must import them individually as follows:
 
 ```
 import string from std::ascii
