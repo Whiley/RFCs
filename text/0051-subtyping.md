@@ -1,6 +1,6 @@
 - Feature Name: `simple_subtyping`
 - Start Date: `23-07-2019`
-- RFC PR: (leave this empty)
+- RFC PR: https://github.com/Whiley/RFCs/pull/51
 
 # Summary
 
