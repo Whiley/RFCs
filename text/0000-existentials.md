@@ -71,7 +71,8 @@ only have the former now).
 
 **Following the above interpretation, open records do indeed make
   sense**.  However, they are not currently used much.  The intended
-  use case is to enable polymorphism.  For example, the current implementation of `std::io::Reader` is:
+  use case is to enable polymorphism.  For example, the current
+  implementation of `std::io::Reader` is:
 
 ```
 public type Reader is {
@@ -89,13 +90,83 @@ implementation state.  **However, the current implementation of Whiley
 provides no mechanism enabling this**.  This is because we cannot
 currently bind functions or methods to their enclosing record.
 
+To understand this further, consider the following `Channel` interface:
+
+```
+type Channel<T> is {
+     method read()->(null|byte),
+     method write(byte)->bool,
+     ...
+} 
+```
+
+Then, suppose a (hypothetical) implementation of this using an
+in-memory array:
+
+```
+type ArrayChannel<T> is {
+   int[] data,
+   int size,
+   method read()->(null|byte)
+   method write(byte b)->bool
+}
+```
+
+There are a lot of problems here: firstly, _how do we instantiate
+`ArrayChannel<T>`?  secondly, the return types for `read()` and
+`write()` should include the updated `ArrayChannel`, etc.  Whilst
+there are possible solutions here, they themselves involve some form
+of existential type!  Furthermore, they are not necessarily prohibited
+by the proposed treatement of open records (though this depends on
+some things).
+
 # Technical Details
 
-This should provide a detailed discussion regarding the technical
-aspects of the proposal.  This should clearly identify what exactly is
-being changed (e.g. what the new syntax is, what the new feature does,
-etc).  This should also detail what parts of the compiler need to be
-changed in order for the change to be implemented.
+The proposal is to change the interpretation of open records to have
+an _existential_ semantics (i.e. similar to Java wildcards), rather
+than being like other value types.  For example, consider this type:
+
+```
+type Node is &{ int nodeType, ... }
+type Element is &{ int NodeType, string text }
+```
+
+This should as saying that `Node` is a reference to an unknown record
+type containing an `int nodeType` field.  Under this interpretation,
+the following is valid:
+
+```
+Element elem = ...
+Node node = elem
+```
+
+The above is safe because we _cannot assign to an unknow type_.  That
+is, unlike before, the following is now rejected:
+
+```
+*node = new {nodeType:1}
+```
+
+This doesn't make sense under an existential intepretation because do
+not know the complete structure referred to by `node` and, hence,
+cannot write sufficient information.  An important consequence is that
+it no longer makese sense to instantiate a variable of open record
+type.  For example, the following is no longer permitted:
+
+```
+function id(msg m) -> (msg r):
+    return m
+```
+
+Whilst this `function` previously compiled, it would no longer compile
+under the existential interpretation.  This is because we could not,
+for example, invoke this function (i.e. as it requires knowledge of
+the unknown type).  However, this is less of a concern as we can
+employ templates to implement this method more easily at this time
+(and, if type bounds are supported in the future, many other similar
+methods).
+
+
 
 # Terminology
 
