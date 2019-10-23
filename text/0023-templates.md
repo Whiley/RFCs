@@ -1,6 +1,7 @@
 - Feature Name: `templates`
 - Date: `20-12-2018`
 - RFC PR: https://github.com/Whiley/RFCs/pull/24
+- Tracking Issue: https://github.com/Whiley/WhileyCompiler/issues/890
 - Authors: @altmattr @DavePearce
 
 # Summary
