@@ -11,14 +11,15 @@ A common pattern arising is that one wants to import a module
 
 # Motivation
 
-At this stage, `import` statements in Whiley are a bit cumbersome.  For example, I end up writing stuff like this a lot:
+At this stage, `import` statements in Whiley are a bit cumbersome at
+times.  For example, one ends up repeating a pattern like this a lot:
 
 ```
 import std::vector
 import Vector from std::vector
 ```
 
-This allows me to write something like this:
+This is used because it allows one to write something like this:
 
 ```
 Vector<int> vec = Vector([1,2,3])
