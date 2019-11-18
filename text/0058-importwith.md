@@ -1,6 +1,6 @@
 - Feature Name: `import_with`
 - Start Date: `24-10-2019`
-- RFC PR: (leave this empty)
+- RFC PR: https://github.com/Whiley/RFCs/pull/58
 - See also: [RFC#53](https://github.com/Whiley/RFCs/blob/master/text/0053-imports.md)
 
 # Summary
