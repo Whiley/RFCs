@@ -315,8 +315,10 @@ int|null x = rec.f
 
 The constraint set generated for the final statement is: `{c2.f <: c1 <: int|null, {int f} <: c2}`
 
-# Terminology
-
 # Drawbacks and Limitations
 
+Unknown.
+
 # Unresolved Issues
+
+* **(Algorithm)** A key question is how best to solve this efficiently.
