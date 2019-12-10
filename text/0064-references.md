@@ -1,6 +1,6 @@
 - Feature Name: `references`
 - Start Date: `25-11-2019`
-- RFC PR: (leave this empty)
+- RFC PR: https://github.com/Whiley/RFCs/pull/64
 - See also: [#0054](https://github.com/Whiley/RFCs/blob/master/text/0054-existentials.md)
 
 # Summary
