@@ -1,6 +1,7 @@
 - Feature Name: `type-inference`
 - Start Date: `25-11-2019`
-- RFC PR: (leave this empty)
+- RFC PR: https://github.com/Whiley/RFCs/pull/66
+- Tracking Issue: https://github.com/Whiley/WhileyCompiler/issues/995
 
 # Summary
 
