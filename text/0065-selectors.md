@@ -1,6 +1,6 @@
 - Feature Name: `type_selectors`
 - Start Date: `22-11-2019`
-- RFC PR: (leave this empty)
+- RFC PR: https://github.com/Whiley/RFCs/pull/65
 
 # Summary
 
