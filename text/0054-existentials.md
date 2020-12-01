@@ -1,7 +1,7 @@
 - Feature Name: `existentials`
 - Start Date: `27-08-2019`
 - RFC PR: https://github.com/Whiley/RFCs/pull/54
-- _Superseeded by [RFC#64](https://github.com/Whiley/WhileyCompiler/issues/967)_
+- _Superseeded by [RFC#64](https://github.com/Whiley/RFCs/blob/master/text/0064-references.md)_
 
 # Summary
 
