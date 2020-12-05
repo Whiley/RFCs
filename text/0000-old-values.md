@@ -1,4 +1,4 @@
-- Feature Name: Old Heap Values
+- Feature Name: `old-heap-values`
 - Start Date: `05-12-2020`
 - RFC PR:
 
@@ -69,10 +69,48 @@ options:
 location in the original heap, whilst `*p` refers to a location in the
 final heap.  _This following the currently accepted interpretation._
 
-2. Old (`*p`), new (`'p`).  In this interpretation, `'p` refers to a
-location in the original heap, whilst `*p` refers to a location in the
+2. Old (`*p`), new (`'p`).  In this interpretation, `*p` refers to a
+location in the original heap, whilst `'p` refers to a location in the
 final heap.  _This flips the currently accepted interpretation._
 
+Interpretation (1) above is perhaps the most consistent with other
+tools which employ `old(e)` to capture the pre-state.  It is perhaps a
+little unclear which is the least confusing though!
+
+## Examples
+
+The following provides a more complex example to illustrate:
+
+```
+type Option<T> is (T|null item)
+type map<T> is Option<T>[]
+
+property equalsExcept<T>(T[] lhs, T[] rhs, int i)
+where all { k in 0..|lhs| | i == k || lhs[k] == rhs[k] }
+
+property inserted<T>(Option<T>[] lhs, Option<T>[] rhs, int i, T item)
+where all { k in 0..|lhs| | (i == k) ==> (lhs[k] == null && rhs[k] == item) }
+
+method insert<T>(&map<T> m, T item)
+// Require some space in the map
+requires some { i in 0..|*m| | (*m)[i] == null }
+// Item has been inserted somewhere
+ensures some { i in 0..|*m| | equalsExcept(*m,*m,i) && inserted(*m,*m,i,item) }:
+    ...
+```
+
+Anothe interesting example is the following (which could never verify):
+
+```
+method broken(int x) -> (&int q)
+requires x >= 0
+ensures 'q >= 0:
+   //
+   return new x
+```
+
+The above could never verify because it attempts to refer to a
+location in the original heap which did not exist!
 
 # Terminology
 
