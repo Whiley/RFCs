@@ -61,6 +61,17 @@ ensures *x == 'y && *y == 'x:
     *y = tmp
 ```
 
+An important question is how the two operators `*p` and `'p` are
+interpreted when used in a post-condition.  There are two obvious
+options:
+
+1. Old (`'p`), new (`*p`).  In this interpretation, `'p` refers to a
+location in the original heap, whilst `*p` refers to a location in the
+final heap.  _This following the currently accepted interpretation._
+
+2. Old (`*p`), new (`'p`).  In this interpretation, `'p` refers to a
+location in the original heap, whilst `*p` refers to a location in the
+final heap.  _This flips the currently accepted interpretation._
 
 
 # Terminology
