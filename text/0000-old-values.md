@@ -67,15 +67,17 @@ options:
 
 1. Old (`'p`), new (`*p`).  In this interpretation, `'p` refers to a
 location in the original heap, whilst `*p` refers to a location in the
-final heap.  _This following the currently accepted interpretation._
+final heap.  _This follows the currently accepted interpretation._
 
 2. Old (`*p`), new (`'p`).  In this interpretation, `*p` refers to a
 location in the original heap, whilst `'p` refers to a location in the
 final heap.  _This flips the currently accepted interpretation._
 
 Interpretation (1) above is perhaps the most consistent with other
-tools which employ `old(e)` to capture the pre-state.  It is perhaps a
-little unclear which is the least confusing though!
+tools which employ `old(e)` to capture the pre-state.  In contrast,
+interpretation (2) is perhaps slightly easier to implement as the
+meaning of `*p` is not context dependent (i.e. always translates to
+the initial heap).  _This proposal adopts interpretation (2)_.
 
 ## Examples
 
@@ -86,16 +88,19 @@ type Option<T> is (T|null item)
 type map<T> is Option<T>[]
 
 property equalsExcept<T>(T[] lhs, T[] rhs, int i)
-where all { k in 0..|lhs| | i == k || lhs[k] == rhs[k] }
+where |lhs| == |rhs| && all { k in 0..|lhs| | i == k || lhs[k] == rhs[k] }
 
 property inserted<T>(Option<T>[] lhs, Option<T>[] rhs, int i, T item)
 where all { k in 0..|lhs| | (i == k) ==> (lhs[k] == null && rhs[k] == item) }
 
+/**
+ * Insert an item into a heap-allocated map
+ */
 method insert<T>(&map<T> m, T item)
 // Require some space in the map
 requires some { i in 0..|*m| | (*m)[i] == null }
 // Item has been inserted somewhere
-ensures some { i in 0..|*m| | equalsExcept(*m,*m,i) && inserted(*m,*m,i,item) }:
+ensures some { i in 0..|*m| | equalsExcept(*m,'m,i) && inserted(*m,'m,i,item) }:
     ...
 ```
 
@@ -104,7 +109,7 @@ Anothe interesting example is the following (which could never verify):
 ```
 method broken(int x) -> (&int q)
 requires x >= 0
-ensures 'q >= 0:
+ensures *q >= 0:
    //
    return new x
 ```
@@ -114,13 +119,16 @@ location in the original heap which did not exist!
 
 # Terminology
 
+   * *(Old vs New Heap)*.  This proposal introduces a notion of the
+      heap _before_ and _after_ a given operation has executed.
+
 # Drawbacks and Limitations
 
-Conflict with notation for new stuff.
+   * Other considerations are being given to allowing a tick operator
+     to be used for naming return values (e.g. if `st` is a parameter,
+     then we can have `st'` as a return value to signal a connection).
+     Aligning this syntax would potentially be helpful.
 
 # Unresolved Issues
 
-List any currently unresolved aspects of the change proposal.  These
-will need to be adequately resolved before the RFC is accepted.
-Identifying these issues provides a way for the author(s) of the RFC
-to leverage the community in finding appropriate solutions.
+None.
