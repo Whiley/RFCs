@@ -51,33 +51,34 @@ method_.
 # Technical Details
 
 The key technical contribution of this proposal is the introduction of
-the _tick_ operator `'` which can be used as follows:
+the _tick_ operator `'*e` for an arbitrary expression `e`, illustrated
+as follows:
 
 ```
 method swap(&int x, &int y)
-ensures *x == 'y && *y == 'x:
+ensures *x == '*y && *y == '*x:
     int tmp = *x
     *x = *y
     *y = tmp
 ```
 
-An important question is how the two operators `*p` and `'p` are
+An important question is how the two expressions `*p` and `'*p` are
 interpreted when used in a post-condition.  There are two obvious
 options:
 
-1. Old (`'p`), new (`*p`).  In this interpretation, `'p` refers to a
+1. Old (`'*p`), new (`*p`).  In this interpretation, `'p` refers to a
 location in the original heap, whilst `*p` refers to a location in the
 final heap.  _This follows the currently accepted interpretation._
 
-2. Old (`*p`), new (`'p`).  In this interpretation, `*p` refers to a
-location in the original heap, whilst `'p` refers to a location in the
+2. Old (`*p`), new (`'*p`).  In this interpretation, `*p` refers to a
+location in the original heap, whilst `'*p` refers to a location in the
 final heap.  _This flips the currently accepted interpretation._
 
 Interpretation (1) above is perhaps the most consistent with other
 tools which employ `old(e)` to capture the pre-state.  In contrast,
 interpretation (2) is perhaps slightly easier to implement as the
 meaning of `*p` is not context dependent (i.e. always translates to
-the initial heap).  _This proposal adopts interpretation (2)_.
+the initial heap).  _This proposal adopts interpretation (1)_.
 
 ## Examples
 
@@ -90,8 +91,8 @@ type map<T> is Option<T>[]
 property equalsExcept<T>(T[] lhs, T[] rhs, int i)
 where |lhs| == |rhs| && all { k in 0..|lhs| | i == k || lhs[k] == rhs[k] }
 
-property inserted<T>(Option<T>[] lhs, Option<T>[] rhs, int i, T item)
-where all { k in 0..|lhs| | (i == k) ==> (lhs[k] == null && rhs[k] == item) }
+property inserted<T>(Option<T>[] before, Option<T>[] after, int i, T item)
+where all { k in 0..|before| | (i == k) ==> (before[k] == null && after[k] == item) }
 
 /**
  * Insert an item into a heap-allocated map
@@ -100,7 +101,7 @@ method insert<T>(&map<T> m, T item)
 // Require some space in the map
 requires some { i in 0..|*m| | (*m)[i] == null }
 // Item has been inserted somewhere
-ensures some { i in 0..|*m| | equalsExcept(*m,'m,i) && inserted(*m,'m,i,item) }:
+ensures some { i in 0..|*m| | equalsExcept('*m,*m,i) && inserted('*m,*m,i,item) }:
     ...
 ```
 
@@ -109,7 +110,7 @@ Anothe interesting example is the following (which could never verify):
 ```
 method broken(int x) -> (&int q)
 requires x >= 0
-ensures *q >= 0:
+ensures '*q >= 0:
    //
    return new x
 ```
@@ -124,11 +125,12 @@ location in the original heap which did not exist!
 
 # Drawbacks and Limitations
 
-   * Other considerations are being given to allowing a tick operator
-     to be used for naming return values (e.g. if `st` is a parameter,
-     then we can have `st'` as a return value to signal a connection).
-     Aligning this syntax would potentially be helpful.
+   * Other considerations are to allow for naming return values
+     (e.g. if `st` is a parameter, then we can have `st'` as a return
+     value to signal a connection).  Aligning this syntax would
+     potentially be helpful.
 
 # Unresolved Issues
 
-None.
+Eventually, the notation can be generalised to `'e`' for use with
+variants, etc.
