@@ -12,7 +12,7 @@ quantifiers.  This proposal aims to fix this.
 Currently, arrays cannot be iterated directly and, instead, must be
 iterated using explicit index variables.  For example:
 
-```
+```whiley
 function sum(int[] arr) -> (int r):
    int m = 0
    for i in 0..|arr|:
@@ -24,7 +24,7 @@ Here, `i` is the index variable used to _indirectly iterate_ over the
 array `arr`.  In some situations, it is helpful to allow _direct
 iteration_ as a short form:
 
-```
+```whiley
 function sum(int[] arr) -> (int r):
    int m = 0
    for v in arr:
@@ -35,7 +35,7 @@ function sum(int[] arr) -> (int r):
 In addition to `for` loops, iteration should be supported in `all` /
 `some` quantifiers:
 
-```
+```whiley
 function max(int[] arr) -> (int m)
 // Cannot compute max of empty array
 requires |arr| > 0
