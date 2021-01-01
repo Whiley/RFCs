@@ -32,7 +32,7 @@ function sum(int[] arr) -> (int r):
    return m
 ```
 
-In addition to for loops, iteration should be supported in `all` /
+In addition to `for` loops, iteration should be supported in `all` /
 `some` quantifiers:
 
 ```
@@ -58,8 +58,12 @@ clashes these can exploit the underlying _expression index_.
 
 # Terminology
 
-   * **Array Iteration.** This refers to the process of iterating an
-       array directly, as enabled through this proposal.
+   * **Direct Iteration.** This refers to the process of iterating the
+       elements of an array explicitly (i.e. as enabled through this
+       proposal).
+
+   * **Indirect Iteration.** This refers to the process of iterating the
+       elements of an array using an index variable.
 
 # Drawbacks and Limitations
 
