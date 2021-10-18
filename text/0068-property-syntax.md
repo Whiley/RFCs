@@ -1,6 +1,6 @@
 - Feature Name: `property_syntax`
 - Start Date: `19-10-21`
-- RFC PR: (leave this empty)
+- RFC PR: https://github.com/Whiley/RFCs/pull/102
 
 # Summary
 
