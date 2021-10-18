@@ -10,7 +10,7 @@ Currently, the syntax for properties is limited to predicates which is
 unnecessarily restrictive.  This RFC will take the first step towards
 generalising properties accordingly.  Firstly, properties will now be
 able to return arbitrary values; secondly, properties for reasoning
-about heap relations (e.e. using `old(e)` syntax) will be given
+about heap relations (e.g. using `old(e)` syntax) will be given
 special status as _variants`.
 
 # Motivation
@@ -32,14 +32,26 @@ special status within the theorem prover.  Specifically, properties
 can be _inlined_ during the verification process. This provides
 significant additional expressivity over functions which are treated
 as _uninterpreted_ during verification.  In some sense, properties are
-like macros.  Key points arising:
+like macros.
 
 The most obvious way to improve the syntax of properties is to allow
 an expression body.  Combined with e.g. conditional expressions or
-general terms, this makes them quite powerful.  A key arises around
-what restrictions (if any) should be placed on properties.  Currently,
-properties can be recursive but, obviously, cannot contain loops.  An
-example is the following:
+general terms, this makes them quite powerful.  A key issue arises
+around what restrictions (if any) should be placed on the body of a
+`property`.  Currently, properties can be recursive but, obviously,
+cannot contain loops.  The suggested approach is to restrict their
+bodies to a subset of statements, initially including only `return`
+and `if`.  This means they cannot contain variable declarations, or
+loops, etc.  An example is the following:
+
+```Whiley
+property sum(int x, int y) -> int:
+   return x + y
+```
+
+Obviously, this is pretty restrictive and this RFC anticipates
+generalising this further in the future.  An example illustrating
+control-flow is the following:
 
 ```Whiley
 property sum(int[] arr, int i) -> int:
