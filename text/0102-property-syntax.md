@@ -46,7 +46,7 @@ loops, etc.  An example is the following:
 
 ```Whiley
 property sum(int x, int y) -> int:
-   return x + y
+   x + y
 ```
 
 Obviously, this is pretty restrictive and this RFC anticipates
