@@ -66,15 +66,15 @@ method main():
 >>> other.whiley
 import main
 ---
-E101 main.whiley:1,2
-E302 main.whiley:2,2:3
+E101 main.whiley 1,2
+E302 main.whiley 2,2:3
 ================
 <<< other.whiley
->>> main.whiley:1:1
+>>> main.whiley 1:1
 method main()
     skip
 ---
-E202 other/main.whiley:2,2
+E202 other/main.whiley 2,2
 ```
 
 Each frame begins with a line of (at least three) `===` and ends
