@@ -40,9 +40,10 @@ This is a simpler and more naturally recursive implementation.
 
 The mechanics are pretty straightforward and would operate in a
 similar fashion to ranges.  As for ranges, the left-hand side is
-inclusive and the right-hand side exclusive.  Should the syntax for
-ranges change to allow different combinations of exclusivity, then we
-would update this operator accordingly.
+inclusive and the right-hand side exclusive (this follows Rust for
+example).  Should the syntax for ranges change to allow different
+combinations of exclusivity, then we would update this operator
+accordingly.
 
 # Terminology
 
