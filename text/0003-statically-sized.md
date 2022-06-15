@@ -100,14 +100,14 @@ The proposed types allow one to specify foreign functions more
 precisely.  For example, the well-known `strncpy` function has the
 following type in C:
 
-```
+```C
 char *strncpy(char *, const char *, size_t);
 ```
 
 Using the above types, we can give a corresponding Whiley type for
 this:
 
-```
+```Whiley
 type C_string is (uint:8[?] items)
 // C strings are null terminated
 where some { i in 0..|items| | items[i] == NULL }
@@ -148,7 +148,7 @@ example, a variable of type `int:32` can flow into a variable of type
 `int:8` _without the need for an explicit cast_.  The following
 illustrates a valid Whiley function under this proposal:
 
-```
+```Whiley
 function abs(int:32 x) -> (uint:32 r)
 ensures r >= 0:
    //
@@ -182,7 +182,7 @@ that `|arr| == n`.
 An important question is how expressions involving statically-sized
 data types will be typed.  For example, consider this Whiley program:
 
-```
+```Whiley
 function sum(int:16 x) -> (int:32 y):
    return x + 1
 ```
@@ -237,7 +237,7 @@ Wikipedia page on
 [Two's Complement](https://en.wikipedia.org/wiki/Two%27s_complement).
 As an example, the following program should verify:
 
-```
+```Whiley
 function f(int:8 x) -> (int:4 r):
    if x >= 0 && x <= 7:
       return x
@@ -248,7 +248,7 @@ function f(int:8 x) -> (int:4 r):
 This verifies primarily because `7 <= 2^(4-1)-1` reduces to `7 <= 7`
 which clearly holds.  In contrast, the following does not verify:
 
-```
+```Whiley
 function f(int:8 x) -> (int:4 r):
    return x
 ```
