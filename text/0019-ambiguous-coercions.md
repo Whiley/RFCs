@@ -22,7 +22,7 @@ this flexibility at the source level comes at a price at the code
 generation level.  Specifically, appropriate tags must be inferred
 during code generation.  The following illustrates a common scenario:
 
-```TypeScript
+```Whiley
 type msg is {int kind, int payload}|{int kind, int[] payload}
 
 function msg(int kind, int payload) -> (msg r):
@@ -39,7 +39,7 @@ information.
 Whilst the above was relatively straightforward, this is not always
 the case.  Consider this variation on the above:
 
-```TypeScript
+```Whiley
 type msg is {int kind, int payload}|{int kind, int|null payload}
 
 function msg(int kind, int payload) -> (msg r):
@@ -65,7 +65,7 @@ easily construct examples where neither is more precise than the
 other.  We refer to such situations as requiring _ambiguous
 coercions_.  The following illustrates yet another variant:
 
-```TypeScript
+```Whiley
 type msg is {int|null kind, int payload}|{int kind, int|null payload}
 
 function msg(int kind, int payload) -> (msg r):
@@ -95,7 +95,7 @@ it can be easily overcome by inserting an appropriate cast for
 disambiguation.  The following illustrates a corrected version of our
 example:
 
-```TypeScript
+```Whiley
 type msg is {int|null kind, int payload}|{int kind, int|null payload}
 
 function msg(int kind, int payload) -> (msg r):
@@ -120,7 +120,7 @@ the scope.
 **Trivially Ambiguous.** The presence of _trivially ambiguous_ union
   types should be detected and reported as an error.  For example:
 
-```
+```Whiley
 type ambiguous is int|int
 ```
 
@@ -137,7 +137,7 @@ type ambiguous is int|int
   open records in some fashion.  A typical example would be something
   like this:
 
-```TypeScript
+```Whiley
 type rec is {int x, ...} | {int y, ...}
 
 function create() -> rec:
@@ -151,7 +151,7 @@ other.
 **Intersections.** A similarly awkward situation arises with
   intersections.  The following illustrates:
 
-```TypeScript
+```Whiley
 type from_t is (int[]|int|null)&(int|bool|null)
 
 function convert(from_t x) -> (int|null y):
@@ -165,7 +165,7 @@ Here, the type `(int[]|int|null)&(int|bool|null)` simplifies to
   examples above, it's important to take recursive types into account
   properly.  Here's one artificial example:
 
-```
+```Whiley
 type List1 is null|{List1 next, int x, int y}
 type List2 is null|{List2 next, int|bool x, int y}
 type List3 is null|{List3 next, int x, int|bool y}
@@ -190,7 +190,7 @@ The starting point is the desire to check whether sometype `S` can
 flow unambiguously into another type `T`.  A simple example
 illustrating this would be:
 
-```
+```Whiley
 function eg(S x) -> (T y):
    return x
 ```
@@ -290,14 +290,14 @@ structure.
 
 For example, let's assume these type definitions:
 
-```
+```Whiley
 type Point is {int x, int y}
 type nPoint is null|Point
 ```
 
 Then, consider the following ambiguous coercion check:
 
-```
+```Whiley
 null|Point <~ nPoint
 ```
 
@@ -305,7 +305,7 @@ This cannot proceed under the other rules above since the type is not
 of the appropriate form.  Instead, we apply expansion and reduce it to
 the following check:
 
-```
+```Whiley
 null|{int x, int y} <~ null|Point
 ```
 
@@ -319,7 +319,7 @@ We now consider some more interesting examples to illustrate some of
 the finer points.  The following does not generate a ambiguous
 coercion error:
 
-```TypeScript
+```Whiley
 type pos is (int x) where x > 0
 type neg is (int x) where x < 0
 
@@ -331,7 +331,7 @@ The reason for this is that expansion is not applied before a tagging
 operation is determined.  In contrast, this does generate an ambiguous
 coercion error:
 
-```TypeScript
+```Whiley
 type pos is (int x) where x > 0
 type neg is (int x) where x < 0
 
@@ -354,7 +354,7 @@ leading to the ambiguous coercion.
 nominal types should ideally be accounted for.  Specifically, consider
 a situation such as the following:
 
-```TypeScript
+```Whiley
 type msg_m1 is {any kind, int payload}
 type msg_m2 is {int kind, any payload}
 
@@ -375,7 +375,7 @@ in a subsequent RFC.
 **Expansion.** The proposed expansion process is perhaps too coarse-grained?  For
 example, consider this:
 
-```TypeScript
+```Whiley
 type Point is {int x, int y}
 type aPoint is Point|{int x, int y}
 
