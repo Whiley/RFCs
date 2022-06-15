@@ -15,7 +15,7 @@ The presence of union types and runtime type testing presents several
 challenges when compiling Whiley programs for different targets.
 Consider the simplest example:
 
-```
+```Whiley
 type Point is {int x, int y}
 type nPoint is null|Point
 
@@ -68,7 +68,7 @@ difference here from standard approaches is the lack of explicit type
 constructors.  However, we can infer tags based on context to work
 around this.  For example, consider a declaration such as this:
 
-```
+```Whiley
 type tagged is T0 | T1 | ... | Tn
 ```
 
@@ -77,7 +77,7 @@ unique integer tag.  For simplicity, assume the tag for `T0` is `0`,
 for `T1` is `1`, etc.  Then the system can automatically insert tags
 in situations such as the following:
 
-```
+```Whiley
 function f(bool flag) -> int|null:
    if flag:
       return 1
@@ -92,7 +92,7 @@ several challenges to overcome:
 
 - **Retagging**.  Values must be retagged as they transition between
 different unions.  The following illustrates:
-  ```
+  ```Whiley
   function f(bool flag, int|null val) -> bool|int|null:
     if flag:
       return flag
@@ -109,7 +109,7 @@ different unions.  The following illustrates:
   unions, as found in Whiley, this is possible.  For example, consider
   this situation:
 
-  ```
+  ```Whiley
   type Overlap is {int|null x, int y} | {int x, int|null y}
 
   function createOverlap(int x, int y) -> Overlap:
@@ -125,7 +125,7 @@ different unions.  The following illustrates:
   can choose to use a single "top-level" tag or nested tags.  For example,
   consider this:
 
-  ```
+  ```Whiley
   type Nested is null | {int|null value}
 
   function createNested(int|null v) -> Nested:
@@ -232,7 +232,7 @@ Whilst concrete types are good for runtime type testing, there are
 some clear disadvantages.  Specifically, they lead to expensive
 coercions.  Consider the following scenario:
 
-```
+```Whiley
 function f({int|null x, int|null y} rec) -> any:
    return rec
 ```
@@ -248,7 +248,7 @@ etc.
 Whilst the computational cost for the above was not too bad, we can
 easily make it arbitrarily expensive as this example shows:
 
-```
+```Whiley
 function f(int|null[] items) -> any:
    return items
 ```
