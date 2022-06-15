@@ -19,7 +19,7 @@ inadequate.
 This proposal reinstates Whiley's `for` each statement whose syntax is
 illustrated by the following:
 
-```
+```Whiley
 function sum(int[] items) -> (int r):
    int x = 0
    for i in 0..|xs|:
@@ -34,7 +34,7 @@ have been already declared.  As usual, `for` loops do support both
 `break` and `continue`, as well as `where`.  The following illustrates
 a more complex example:
 
-```
+```Whiley
 property contains(int[] items, int item, int n)
 where where all { k in 0..n | items[k] != item }
 
@@ -61,7 +61,7 @@ proposal:
 * **Explicit Type Declarations**.  The following syntax allows the type
     of the declared variable be given:
 
-  ```
+  ```Whiley
   for(int i in 0..|items|):
      if items[i] == item:
         return true
@@ -72,7 +72,7 @@ proposal:
 * **Arbitrary Sources**.  The restriction requiring the loop source be
     an array range expression could be lifted.  For example, we could
     write `contains()` as follows:
-  ```
+  ```Whiley
   function contains(int[] items, int item) -> (bool r)
   ensures r ==> items[r] == item:
   ensures !r ==> all { k in 0..|items| | items[k] != item }:
@@ -90,7 +90,7 @@ proposal:
   
 * **Pair Syntax**.  Another option might be to have a "pair" syntax,
   such as follows: 
-  ```
+  ```Whiley
   function contains<T>(T[] items, T item) -> (bool r)
   ensures r ==> items[r] == item:
   ensures !r ==> all { k in 0..|items| | items[k] != item }:
