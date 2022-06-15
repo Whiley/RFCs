@@ -14,7 +14,7 @@ There are myriad examples of code that is better written with generics and the i
 
 Imagine you wanted to write some form of animation loop, free from access to any global variables.  The natural implemenation of such a function will look something like
 
-~~~~~
+~~~~~Whiley
 function animate(state -> state draw, state initialState) -> state:
   if (endCondition):
     return state
@@ -31,7 +31,7 @@ We will ignore the termination condition as it has no effect on this proposal an
 
 All is well then, we can define our state and `draw` function thus
 
-~~~~~
+~~~~~Whiley
 type state is {int xpos, int ypos}
 
 function draw(state in) -> (state out):
@@ -71,7 +71,7 @@ Templates require syntax for the introduction of a type variable (type abstracti
 
 We propose that all properties, functions, methods and types _may_ have a set of type parameters in the form of a template declaration.  These are defined using the syntax `template <T1,..,Tn>` for arbitrarily many types `Tk`.  For example, a template type `pair` with two type parameters will be written as
 
-~~~~~
+~~~~~Whiley
 template<S,T>
 type pair is {S first, T second}
 ~~~~~
@@ -91,7 +91,7 @@ Finally, we note that the `template<T>` notation hints at a compile-time impleme
 
 A key challenge in the implementation of templates is to physically instantiate them.  In C++, this was an issue for a long time but explicit instantiation was introduced in C++11 (see [here](https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.cbclx01/explicit_instantiation.htm)).  A _template function declaration_ such as
 
-~~~~~
+~~~~~Whiley
 template<T,P>
 function foo(T paramOne, P paramTwo) -> (T ret):
   return paramOne
@@ -105,19 +105,19 @@ instantiate foo<int, char>
 
 Providing both those parameters creates a function that results from the textual substitution of the two type parameters.  I.e. providing `int` and `char` results in the _creation_ (in the enclosing compilation unit) of the function identical to
 
-~~~~
+~~~~Whiley
 function foo(int paramOne, char paramTwo) -> (int ret):
    return paramOne
 ~~~~
 
 At this point, we can invoke `foo()` as though it were a locally defined declaration.  A key challenge is that `template` declarations are type checked.  Therefore, for example, the following template declarations will be rejected:
 
-```
+```Whiley
 template<T>
 function f(T x) -> (int r):
    return x
 ```
-```
+```Whiley
 template<T>
 function f(T x) -> (T r):
    return x+1
@@ -143,7 +143,7 @@ Finally, extensions which could be implemented after the fact include:
 
 A good use for conditional compilation would be to support the automatic generation of methods for converting between different types.  For example, consider a library for manipulating JSON.  In Whiley we might write this:
 
-```
+```Whiley
 type payload is { int x, int[] fields }
 ```
 
