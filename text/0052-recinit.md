@@ -12,7 +12,7 @@ identified as an issue in Whiley, it makes sense to follow suit.
 
 The following illustrates a common pattern for initialising a record:
 
-```
+```Whiley
 type Point is {int x, int y}
 
 function Point(int x, int y):
@@ -29,7 +29,7 @@ When initialising a record, a variable can be used on its own to
 initialise a field of the same name.  For example, the above can be
 rewritten as:
 
-```
+```Whiley
 function Point(int x, int y):
    return {x, y}
 ```
@@ -37,7 +37,7 @@ function Point(int x, int y):
 Observe that we can mix and match old-style initialisers with new
 style initialisers.  For example, we can write this:
 
-```
+```Whiley
 function Point(int y):
    return {x:0, y}
 ```
@@ -45,7 +45,7 @@ function Point(int y):
 Finally, it is a syntax error to inialise a field more than once.
 Thus, the following should not compile:
 
-```
+```Whiley
 function Point(int x, int y):
    return {x:x, x, y}
 ```
