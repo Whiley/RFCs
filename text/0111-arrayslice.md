@@ -1,6 +1,6 @@
 - Feature Name: `array_slice`
 - Start Date: `27-05-22`
-- RFC PR: (leave this empty)
+- RFC PR: https://github.com/Whiley/RFCs/pull/111
 
 # Summary
 
