@@ -15,7 +15,7 @@ specify template types, and introduce other improvements.
 Currently, types in Whiley are inferred in a backwards direction.
 This is best understood through the following example:
 
-```
+```Whiley
 function id<T>(T x) -> (T y):
    return x
 
@@ -30,7 +30,7 @@ for the argument (i.e. `2` which has type `int`).
 Backwards type inference like this works in the presence of
 overloading.  For example, consider this:
 
-```
+```Whiley
 function get<S,T>(map<S,T> map, S item) -> (T y):
    ...
 
@@ -47,7 +47,7 @@ being called; and, secondly, whether an appropriate binding exists.
 An unfortunate problem occurs with the backwards algorithm as
 described.  Specifically, the following fails to type check:
 
-```
+```Whiley
 type Item<T> is { T contents }
 type Node<T> is ascii::string | Item<T>
 
@@ -67,7 +67,7 @@ type inference is one solution to this (though not the only one).
 amounts of unnecessary computation.  For example, consider the
 following:
 
-```
+```Whiley
 {int|null f} x = {f:0}
 ```
 
@@ -81,7 +81,7 @@ it could simply create the appropriate representation directly.
 **(Primitive Types)** A similar situation to the above is the
   following:
 
-```
+```Whiley
 int:8 f = 8
 ```
 
@@ -92,7 +92,7 @@ representation.
 
 **(Reference Types)** The following currently fails to compile:
 
-```
+```Whiley
 &(int|null) p = new 1
 ```
 
@@ -101,7 +101,7 @@ _not_ a subtype of `&(int|null)`.
 
 **(Lambda Types)** The following currently compiles:
 
-```
+```Whiley
 type fun_t is function(int)->(int|null)
 
 method main():
@@ -117,7 +117,7 @@ The compiler already contains various components that perform forward
 type inference and, hence, the primary issues are well known.  For
 example:
 
-```
+```Whiley
 (int[])|(bool[]) x = [e; n]
 ```
 
@@ -131,7 +131,7 @@ is required.
 **(Error Messages)** Another challenge arises with reporting error
 messages.  For example, consider this (incorrect) program:
 
-```
+```Whiley
 function id(int x) -> (int y):
    return x
 
@@ -169,7 +169,7 @@ better?_
 **(Implicit Coercions)** Another issue arises with forward propagation
   and the optimal placement of coercions.  For example:
 
-```
+```Whiley
 {int f} rec = ...
 int|null x = rec.f
 ```
@@ -177,7 +177,7 @@ int|null x = rec.f
 A naive implementation of forward type inference would effectively
 result in this:
 
-```
+```Whiley
 {int f} rec = ...
 int|null x = (({int|null f})rec).f
 ```
@@ -190,7 +190,7 @@ when it is read, rather than coercing the entire enclosing value
   presents problems as well.  For example, consider this variation on
   the `id()` example from above:
 
-```
+```Whiley
 function id(int x) -> (int y):
    return x
 
@@ -223,7 +223,7 @@ failure of some kind.
 
 The following illustrates the simplest possible example:
 
-```
+```Whiley
 int:8 x = 1
 ```
 
@@ -239,7 +239,7 @@ corresponds to the return type of exactly one expression.
 
 As another example, consider the following again:
 
-```
+```Whiley
 function id(int x) -> (int y):
    return x
 
@@ -262,7 +262,7 @@ attempt to solve them.
 A _failure_ occurs when no solution for one or more constraint
 variables can be found.  For example, consider the following:
 
-```
+```Whiley
 int x = false
 ```
 
@@ -274,7 +274,7 @@ is reported on the expression `false`.
 An _ambiguity_ arises when there is more than one solution for a given
 variable.  For example, consider the following:
 
-```
+```Whiley
 (int[])|(bool[]) xs = []
 ```
 
@@ -292,7 +292,7 @@ and, instead, relies on a subsequent check for ambiguous coercions.
 Finally, we consider the handling of template parameters.  Consider
 the following:
 
-```
+```Whiley
 type Box<T> is { T item }
 
 function id<T>(Box<T> box) -> T:
@@ -309,7 +309,7 @@ return type of the invocation, whilst `c3` the type of its argument.
 
 Consider again this example:
 
-```
+```Whiley
 {int f} rec = ...
 int|null x = rec.f
 ```
