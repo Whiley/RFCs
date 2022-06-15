@@ -18,7 +18,7 @@ objects (e.g. the JavaScript DOM).
 An _open record_ in Whiley has an unknown number of fields.  The
 following illustrates:
 
-```
+```Whiley
 type msg is { int kind, ... }
 type msg_i is {int kind, int data} where kind == 0
 type msg_b is {int kind, bool data} where kind == 1
@@ -36,7 +36,7 @@ This defines an arbitrary concept, `msg`, for representing messages
 with varying payloads.  Open records behave like other value types in
 Whiley and support subtyping.  For example:
 
-```
+```Whiley
 msg m = {kind:1}
 ...
 m = {kind:2, other:2}
@@ -45,7 +45,7 @@ m = {kind:2, other:2}
 As a consequence, they are also treated like other value types with
 respect to references.  This means the following is *not* permitted:
 
-```
+```Whiley
 &msg_i p = new {kind:1,data:2}
 &msg q = p // not permitted
 ```
@@ -54,7 +54,7 @@ Given the current interpration of open records, this is an entirely
 rational response from the type checker.  Specifically, allowing the
 above would be unsound.  For example, if this code followed:
 
-```
+```Whiley
 *q = {kind:1}
 ```
 
@@ -66,7 +66,7 @@ only have the former now).
   situations.** For example, consider this exceprt modelling the
   JavaScript DOM:
 
-```
+```Whiley
 public type Node is {
     // Identifies what kind of node this i
     int nodeType,    
@@ -85,7 +85,7 @@ public type Document is {
 The problem here is that the following doesn't compile due to a lack
 of subtyping:
 
-```
+```Whiley
 &Element elem = document.createElement("div")
 document.appendChild(elem)
 ```
@@ -102,7 +102,7 @@ subtyping behaviours.  The following summarises:
 
 * `&+T` describes a reference type with _covariant_ subtyping. Such types can be read fully.  For example:
 
-```
+```Whiley
 &+{int f, int g} p = new {f:1, g:2}
 &+{int f, ...} q = p
 {int f} val = *q
@@ -110,14 +110,14 @@ subtyping behaviours.  The following summarises:
 
 Such types guarantee the referent has _at least_ the given fields (though may have more).  In other words, that `T` is an _upper bound_.  As such they cannot be assigned to protect the referent.  That is, we cannot allow `*q = {f:1}` as this would invalidate `p`.  Observer, however, that they can still be mutated.  For example:
 
-```
+```Whiley
 &+{int f} ptr = ...
 ptr->f = 1
 ```
 
 * `&-T` describes a reference type with _contravariant_ subtyping.  Such types can be assigned.  For example:
 
-```
+```Whiley
 &{int f, ...} = p
 &-{int f, int g} q = p
 *q = {f:1, g:1}
@@ -130,7 +130,7 @@ Such types guarantee the referent can accept _at most_ the given fields (though 
 For example, using the above we can remodel our DOM implementation as
 follows:
 
-```
+```Whiley
 type Node is &?{ int nodeType, ... }
 type Element is &?{ int nodeType, string textContent }
 ```
@@ -139,7 +139,7 @@ This should be interpreted as saying that `Node` is a reference to an
 unknown record type containing an `int nodeType` field.  Under this
 interpretation, the following is valid:
 
-```
+```Whiley
 Element elem = ...
 Node node = elem
 ```
@@ -147,7 +147,7 @@ Node node = elem
 The above is safe because we _cannot assign to an unknown type_.  That
 is, unlike before, the following is now rejected:
 
-```
+```Whiley
 *node = new {nodeType:1}
 ```
 
@@ -156,7 +156,7 @@ do not know the complete structure referred to by `node` and, hence,
 cannot write sufficient information (i.e. enough fields).  Observe,
 however, that the following is perfectly acceptable:
 
-```
+```Whiley
 node->nodeType = 1
 ```
 
