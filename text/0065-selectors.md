@@ -13,7 +13,7 @@ future RFCs related to subtyping and flow typing.
 A type selector `s` refines a given type `T` to yield a _proper
 subtype_ `S`.  For example, consider this assignment:
 
-```
+```Whiley
 null|js_string x = "hello"
 ```
 
@@ -81,7 +81,7 @@ that `T1 :> T2` iff some witness `w` exists such that `T1 o w` gives
 `int|null :> int`).  However, it's not sufficient in other cases, such
 as the following:
 
-```
+```Whiley
 int|null x = ...
 null|int y = x
 ```
@@ -96,7 +96,7 @@ witness.
 Type selectors can (potentially) be used for improved error messages.
 For example, consider this:
 
-```
+```Whiley
 {int x, int y, int z} p = { x:0, y:1, z:false }
 ```
 
@@ -125,7 +125,7 @@ None.
 A key challenge is the handling of recursive types.  For example,
 consider the following arrangement:
 
-```
+```Whiley
 type List<T> is null | { T data, List<T> next }
 
 List<int> x = ...
