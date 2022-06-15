@@ -24,7 +24,7 @@ being proposed by this RFC (though maybe proposed by later RFCs).
 from being modified.  Any variable declared `final` would require an
 _initialiser_.  The following illustrates:
 
-```
+```Whiley
 final int x = 1
 ```
 
@@ -32,7 +32,7 @@ final int x = 1
 amongst one or more concurrently executing threads.  By default, this
 would be sequentially consistent (following C11).  The following illustrates:
 
-```
+```Whiley
 atomic &int x = new 1
 ```
 
@@ -40,7 +40,7 @@ atomic &int x = new 1
   data and, hence, that forms part of the _foreign function
   interface_.
 
-```
+```Whiley
 type JsObject is foreign { ... }
 ```
 
@@ -48,7 +48,7 @@ type JsObject is foreign { ... }
   purposes of verification.  Such values would never be compiled on
   the back-end into actual code.
 
-```
+```Whiley
 type Purse is {
   ghost &Mint owner,
   int amount
@@ -117,7 +117,7 @@ another important question is whether or not function or method
 overloading should be permitted.  For example, whether or not this is
 valid:
 
-```
+```Whiley
 function f(final int x) -> (int r):
    return x
 
