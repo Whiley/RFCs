@@ -22,7 +22,7 @@ variable declarations.  Such top-level variable declarations are
 referred to as _static variable declarations_.  For example, this
 would allow us to write:
 
-```
+```Whiley
 int JANUARY = 1
 ```
 
@@ -30,7 +30,7 @@ This is not a strict replacement for the original `constant`
 declaration because it represents _mutable state_.  However, through
 a separate (and complimentary) proposal we could write the following:
 
-```
+```Whiley
 final int JANUARY = 1
 ```
 
