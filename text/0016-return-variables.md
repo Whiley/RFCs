@@ -12,7 +12,7 @@ clarify this once and for all.
 Whiley has long supported the notion of _return variables_ or just
 _returns_ for short.  The following illustrates:
 
-```
+```Whiley
 function f(int x) -> (int y):
    ...
 ```
@@ -21,7 +21,7 @@ Here, `x` is a declared parameter and `y` a declared return.
 Similarly, for some time, it has been the case that return variables
 cannot be redeclared.  For example, this fails to compile:
 
-```
+```Whiley
 function f(int x) -> (int y):
    int y = x
    return y
@@ -42,7 +42,7 @@ return variables were used in specifications.
 The question then is: _should we be allowed to use return variables?_
 For example, at the current time, the following program does compile:
 
-```
+```Whiley
 function f(int x) -> (int y):
    y = x
    return y
@@ -65,7 +65,7 @@ way to return a value from a function or method_.  As such, it seems
 that assigning to a return value should be a substitute for returning
 a value.  In otherwords, this should compile:
 
-```
+```Whiley
 function f(int x) -> (int y):
    y = x
 ```
@@ -75,7 +75,7 @@ current time, this program does not compile however.
 
 We note another variation on this for reference:
 
-```
+```Whiley
 function greaterTen(int x)->(bool r):
     if (x > 10):
         r = true
