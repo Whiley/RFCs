@@ -25,7 +25,7 @@ However, this syntax is rather clumsy.  Instead, the proposal will be
 made to remove `constant` declarations and simply replace them with global
 variables.  For example, this would allow us to write:
 
-```
+```Whiley
 int JANUARY = 1
 ```
 
@@ -33,7 +33,7 @@ This is not a strict replacement for the original `constant`
 declaration because it represents _mutable state_.  However, through
 this proposal we could write the following:
 
-```
+```Whiley
 final int JANUARY = 1
 ```
 
@@ -45,7 +45,7 @@ Ownership here refers to the internal mechanism used within a compiler
 back-end for determining when to clone data.  The following
 illustrates a minimal example:
 
-```
+```Whiley
 function f(int[] xs) -> (int r):
    return |xs|
 
@@ -76,7 +76,7 @@ To address the above issue, this RFC proposes the introduction of the
 `final` modifier.  This would allow `f()` above to be rewritten as
 follows:
 
-```
+```Whiley
 function f(final int[] xs) -> (int r):
    return |xs|
 ```
@@ -90,7 +90,7 @@ may pass in a _borrowed_ reference to it.
 The `final` modifier offers some benefits for the foreign function
 interface.  For example, consider this simple Java class:
 
-```
+```Java
 class Test {
   int f(int x) { return x; }
 }
@@ -99,7 +99,7 @@ class Test {
 Without the `final` modifier, the closest type in Whiley for representing
 the type `Test` would be:
 
-```
+```Whiley
 type Test is {
   function f(int) -> (int r),
   ...
@@ -113,7 +113,7 @@ type Test is {
 The problem with the above is that it permits assignment to the field
 `f`.  That is, the following is valid Whiley:
 
-```
+```Whiley
 export method broken(&Test t):
    t.f = &(int x -> x)
 ```
@@ -124,7 +124,7 @@ is that actual instances of class `Test` do not support assignment to
 methods.  However, using the `final` modifier we can more accurately
 model class `Test` with the following Whiley type:
 
-```
+```Whiley
 type Test is {
   final function f(int) -> (int r),
   ...
@@ -149,7 +149,7 @@ the following:
 - **Local Variable Declarations**.  The following illustrates such a
 usage:
 
-```
+```Whiley
 function f(int x) -> (int r):
    final int y = x + 1
    return y
@@ -158,7 +158,7 @@ function f(int x) -> (int r):
 - **Parameter Declarations**.  The following illustrates such a
 usage:
 
-```
+```Whiley
 function f(final int x) -> (int r):
    return x+1
 ```
@@ -166,14 +166,14 @@ function f(final int x) -> (int r):
 - **Type Declarations**.  The following illustrates such a
 usage:
 
-```
+```Whiley
 type fint is (final int x)
 ```
 
 - **Field Declarations**.  The following illustrates such a
 usage:
 
-```
+```Whiley
 type Point is {
   final int x,
   final int y
@@ -183,7 +183,7 @@ type Point is {
 - **Reference Declarations**.   The following illustrates such a
 usage:
 
-```
+```Whiley
 function f(&(final int) p) -> (int r):
    return *p
 ```
@@ -195,13 +195,13 @@ An important question is how subtyping is handled in the presence of
 `final T` is considered distinct from `T` but they are both assignment
 compatible (i.e. subtypes).  Thus, this is considered valid:
 
-```
+```Whiley
 final int x = 1
 int y = x
 ```
 
 Likewise, the converse is also considered valid:
-```
+```Whiley
 int x = 1
 final int y = x
 ```
@@ -211,7 +211,7 @@ management here)
 However, since `final T` is distinct from `T` it follows that this is
 not valid:
 
-```
+```Whiley
 &int x = new 1
 &(final int) y = x
 ```
@@ -232,7 +232,7 @@ _Definite Unassignment Analysis_ is the process of checking that a
 of definite assignment analysis.  For example, the following
 fails definite unassignment analysis:
 
-```
+```Whiley
 function f(final int x) -> (int r):
    x = x + 1
    return x
@@ -254,7 +254,7 @@ is checked in a _flow insensitive_ or _flow sensitive_ fashion.  For
 example, the following is permitted under a flow sensitive analysis
 but not under an insensitive one:
 
-```
+```Whiley
 function f(bool flag) -> (int r):
    final int y
    if flag:
