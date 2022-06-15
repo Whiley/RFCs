@@ -15,21 +15,21 @@ A common pattern arising is that one wants to import a module
 At this stage, `import` statements in Whiley are a bit cumbersome at
 times.  For example, one ends up repeating a pattern like this a lot:
 
-```
+```Whiley
 import std::vector
 import Vector from std::vector
 ```
 
 This is used because it allows one to write something like this:
 
-```
+```Whiley
 Vector<int> vec = Vector([1,2,3])
 vec = vector::push(vec,4)
 ```
 
 Which is slightly nicer than this:
 
-```
+```Whiley
 vector::Vector<int> vec = vector::Vector([1,2,3])
 vec = vector::push(vec,4)
 ```
@@ -38,7 +38,7 @@ vec = vector::push(vec,4)
 [Elm has something like
 this](https://stackoverflow.com/questions/30172903/what-does-exposing-mean-in-elm):
 
-```
+```Elm
 import Html.Lazy exposing (lazy2)
 ```
 
@@ -47,20 +47,20 @@ import Html.Lazy exposing (lazy2)
 
 This RFC proposes the following syntax:
 
-```
+```Whiley
 import std::vector with Vector
 ```
 
 This then replaces the two lines above with one.  In addition, we can
 use a comma-separated list as follows:
 
-```
+```Whiley
 import std::ascii with string, char
 ```
 
 The above is then equivalent to the following:
 
-```
+```Whiley
 import std::ascii
 import string from std::ascii
 import char from std::ascii
