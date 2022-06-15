@@ -15,7 +15,7 @@ particular, a mechanism within the postcondition of a method for
 describing the state of the heap on entry.  To begin, consider a
 simple method which can be specified:
 
-```
+```Whiley
 method put(&int p, int x)
 ensures *p == x:
    *p = x
@@ -26,7 +26,7 @@ the heap _after the method has completed_.  This allows us to say
 something about the side effects of the method.  Now, consider the
 slightly more complex `swap()` method below:
 
-```
+```Whiley
 method swap(&int x, &int y):
     int tmp = *x
     *x = *y
@@ -54,7 +54,7 @@ The key technical contribution of this proposal is the introduction of
 the _tick_ operator `'*e` for an arbitrary expression `e`, illustrated
 as follows:
 
-```
+```Whiley
 method swap(&int x, &int y)
 ensures *x == '*y && *y == '*x:
     int tmp = *x
@@ -84,7 +84,7 @@ the initial heap).  _This proposal adopts interpretation (1)_.
 
 The following provides a more complex example to illustrate:
 
-```
+```Whiley
 type Option<T> is (T|null item)
 type map<T> is Option<T>[]
 
@@ -107,7 +107,7 @@ ensures some { i in 0..|*m| | equalsExcept('*m,*m,i) && inserted('*m,*m,i,item) 
 
 Anothe interesting example is the following (which could never verify):
 
-```
+```Whiley
 method broken(int x) -> (&int q)
 requires x >= 0
 ensures '*q >= 0:
