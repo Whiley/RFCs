@@ -14,7 +14,7 @@ Statements in Whiley must always begin on a new line, as there is no
 mechanism for _sequencing_ them on the same line.  For example, in the
 Java language, we can write:
 
-```
+```Java
 while(i < items.length) {
   j = j + 2; i = i + 1;
 }
@@ -27,7 +27,7 @@ statements on the same line (as above) we need some notion of
 _sequencing_.  The following illustrates the proposed use of the
 sequencing operator, `;`:
 
-```
+```Whiley
 while i < |items|:
   j = j + 2 ; i = i + 1
 ```
@@ -66,7 +66,7 @@ statements nested within them."_
 This means there is no way, for example, to encode a `while` statement
 and its body on the same line.  For example, like this in Java
 
-```
+```Java
 while(i < items.length) { i = i + 1; }
 ```
 
