@@ -18,7 +18,7 @@ special status as _variants`.
 Currently, the syntax for _properties_ is pretty awful.  Here's an
 example from the standard library:
 
-```
+```Whiley
 // Check if two arrays equal for a given subrange
 public property equals<T>(T[] lhs, T[] rhs, int start, int end)
 // Arrays must be big enough to hold subrange
