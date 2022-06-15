@@ -50,7 +50,7 @@ consider:
 variable of --- or containing --- reference type?**  For example, is
 this allowed:
 
-```
+```Whiley
 function cmp(&int p, &int q) -> bool:
    return p == q
 ```
@@ -59,7 +59,7 @@ This does not appear to violate any of the principles set out above.
 Furthermore, in a functional context, it is clear that we should
 support this:
 
-```
+```Whiley
 method swap(&int p, &int q)
 requires p != q:
    ...
@@ -73,7 +73,7 @@ them.
   variable of reference type?**   This is more subtle, as the
   following illustrates:
 
-```
+```Whiley
 function f(&int p) -> (int r):
     return *p
 ```
@@ -91,7 +91,7 @@ Prohibiting dereferencing in a function does not necessarily pose a
 problem.  However, as before, in a functional context we might prefer
 something different:
 
-```
+```Whiley
 type Link is &{ LinkedList next, int data }
 type LinkedList is null | Link
 
@@ -109,7 +109,7 @@ can be manipulated.
 **Can an expression in a function or functional context invoke a
 method?**  This is perhaps more clear cut.  Consider the following:
 
-```
+```Whiley
 function f(&int p, &int q) -> (int r):
   swap(p,q)
   return 0
@@ -119,7 +119,7 @@ It's pretty clear that allowing a pure `function` to invoke a `method`
 violates the above principles and, furthermore, breaks down the
 distinction between them.  *But, what about for functional contexts?*  
 
-```
+```Whiley
 method m(&int p, &int q)
 requires swap(p,q):
    ...
