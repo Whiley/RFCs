@@ -116,7 +116,7 @@ non-terminating nibbles and '0' for the terminating nibble.
 As an example, we consider the following alternative definition of
 `Header`:
 
-```
+```Whiley
 type Header is { u8 opcode, uv operands }
 ```
 
@@ -137,7 +137,7 @@ give `0001 1010`.
 Arrays are encoded using an explicit length variable.  For example,
 consider the following:
 
-```
+```Whiley
 type packet is { u8 len, u8[len] data }
 ```
 
@@ -165,7 +165,7 @@ heap.  In essence, a binary heap consists of a `header` followed by
 zero or more instances of `Item`.  The following clarifies the
 high-level format:
 
-```
+```Whiley
 type BinaryHeap is {
   u8[?] header,
   uv nItems,
@@ -184,7 +184,7 @@ item may refer to zero or more _operands_ which are themselves
 bytes.  The payload is typically used for encoding integer and string
 constants, etc.  The generic format of an `Item` is defined as follows:
 
-```
+```Whiley
 type Item is {
   u8 opcode,
   u8[?] rest
@@ -194,7 +194,7 @@ type Item is {
 Here, the number of bytes are determined by the overall `schema` of
 the concrete format.  We define a number of concrete examples:
 
-```
+```Whiley
 type NaryItem is {
   u8 opcode,
   uv size,
@@ -206,7 +206,7 @@ This defines an `Item` which has an arbitrary number of
 operands, but carries no payload.  Likewise, we can define instances
 for opcodes which have a fixed number of operands as follows: 
 
-```
+```Whiley
 type UnaryItem is {
   u8 opcode,
   uv[1] operands
@@ -224,7 +224,7 @@ type TernaryItem is {
 As another example, we can define an `Item` which has no operands but,
 instead, carries an arbitrary-sized payload:
 
-```
+```Whiley
 type ArbitraryPayloadItem is {
   u8 opcode,
   uv len,
