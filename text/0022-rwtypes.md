@@ -15,7 +15,7 @@ A union of two compatible types may be treated as an effective type in
 certain situations.  The following illustrates an effective record
 being used in a read position:
 
-```
+```Whiley
 type Point2D is {int x, int y}
 type Point3D is {int x, int y, int z}
 type Point is Point2D | Point3D
@@ -27,7 +27,7 @@ function getX(Point p) -> (int r):
 Here, the _readable type_ of parameter `p` is `{int x, int y, ...}`.
 The following illustrates a similar situation with arrays:
 
-```
+```Whiley
 type arr_t is (int[])|(bool[])
 
 function read(arr_t arr, int idx) -> (int|bool r):
@@ -40,7 +40,7 @@ thus, reading from this returns an element of type `int|bool`.
 When effective types are used for assignment, they must exhibit
 appropriate _writeable types_.  The following illustrates for arrays:
 
-```
+```Whiley
 type nint is null|int
 type nbool is null|bool
 type arr_t is (nint[])|(nbool[])
@@ -60,7 +60,7 @@ with the concept of a
 in C.  However, effective types are not strictly required as they are simply
 a form of syntactic sugar.  For example, the above can be rewritten as follows:
 
-```
+```Whiley
 type nint is null|int
 type nbool is null|bool
 type arr_t is (nint[])|(nbool[])
