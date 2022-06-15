@@ -35,7 +35,7 @@ Expressions:
 
 Example:
 
-```
+```Whiley
 function count(int from, int to) -> (int result)
 ensures result >= from:
     //
@@ -108,7 +108,7 @@ runtime, whether the given assertions or specification elements hold.
 This has implications for how `ghost` variables are represented.
 Consider the following hypothetical example:
 
-```
+```Whiley
 function inc(int x, ghost int ub) -> (int r):
 requires x <= ub:
    //
