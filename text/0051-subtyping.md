@@ -15,7 +15,7 @@ Subtyping in Whiley is currently based around the concept of
 separating out the _underlying type_, whilst leaving the verifier to
 pick up the pieces.  For example, consider this snippet:
 
-```
+```Whiley
 type nat is (int n) where n >= 0
 
 function abs(int x) -> (nat r):
@@ -41,7 +41,7 @@ we can use runtime checking when the implicit coercions arise.
 The most obvious scenario where this approach fails is with `function` or
 `method` types.  For example, consider this:
 
-```
+```Whiley
 type fun_t is function(int)->(nat)
 
 function id(int x) -> (int r):
@@ -59,7 +59,7 @@ cannot inspect the implementation of a function).
 
 References are another similar situation to the above.  Consider this:
 
-```
+```Whiley
 function id(&int x) -> (&nat r):
    return x
 ```
@@ -69,7 +69,7 @@ can be partially checked at runtime (e.g. by checking `*r` is `nat` at
 the point of return), it remains fraught with danger.  For example,
 the following illustrates:
 
-```
+```Whiley
 method main():
    &int x = new 0
    &nat y = id(x)
@@ -88,7 +88,7 @@ problems.  For a type test `x is T` where `x` has type `S`, the only
 current requirement is that `T&S != 0` for the type test to be
 considered valid.  Some problematic examples:
 
-```
+```Whiley
 type fnat_t is function(nat)->(int)
 type fint_t is function(int)->(int)
 
@@ -106,7 +106,7 @@ can easily be constructed.
 Another problematic scenario with runtime type tests is the extraction
 of a particular type from an open record.  The following illustrates:
 
-```
+```Whiley
 type Point is { int x, int y, ... }
 
 function getZ(Point p) -> (int r):
@@ -124,7 +124,7 @@ Finally, an interesting aspect of runtime type tests as currently
 implemented is that they lose precision in some cases.  For example,
 consider this:
 
-```
+```Whiley
 type bnat is (nat|bool x)
 
 function check(bnat x) -> (bool r):
@@ -160,7 +160,7 @@ The proposed subtyping operator is strict about the handling of type
 invariants.  Specifically, it will only allow types to be considered
 subtypes when it is certain they are.  Consider the following:
 
-```
+```Whiley
 type nat is (int x) where x >= 0
 type pos1 is (int x) where x > 0
 type pos2 is (nat x) where x > 0
@@ -182,7 +182,7 @@ not permitted.
 To work around this stricter notion of subtyping, casting will be
 employed.  Thus, the `abs()` example from above becomes:
 
-```
+```Whiley
 function abs(int x) -> (nat r):
   if x >= 0:
      return (nat) x
@@ -203,7 +203,7 @@ For a runtime type test `x is T` where `x` has type `S` we require
 that `T` is a subtype of `S`.  This means, for example, that the
 following example now compiles:
 
-```
+```Whiley
 type bnat is (nat|bool x)
 
 function check(bnat x) -> (bool r):
@@ -232,7 +232,7 @@ Thus, `S - T = 0` only when `S` is _equivalent_ to `T` (i.e. when `S
 Some simple programs Whiley may no longer compile.  The following
 illustrates:
 
-```
+```Whiley
 type Point is {int x, int y} where x > y
 
 function f(int x, int y) -> Point:
@@ -243,7 +243,7 @@ In principle, this should not compile because `{int x, int y} <:
 Point` no longer holds.  However, forward type inference could be used
 to resolve this case.  A similar example would be:
 
-```
+```Whiley
 function f(int x, int y) -> Point:
    {int x, int y} r = {x,y}
    return r
