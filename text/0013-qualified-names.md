@@ -14,7 +14,7 @@ meanings of different qualified names.
 Currently, fully qualified naming in Whiley follows the syntax of
 Java. Specifically, we write things like this:
 
-```
+```Whiley
 import std.ascii
 import std.io
 import println from std.io
@@ -52,7 +52,7 @@ example, in the symbol name `std::ascii::to_string` it follows that
 `std::ascii` is the module name, and `to_string` the symbol name.
 The above example in the proposed syntax would be:
 
-```
+```Whiley
 import std::ascii
 import std::io
 import println from std::io
@@ -89,7 +89,7 @@ choose to use fully qualified names to avoid `import` statements.  For
 example, we could rewrite the above without `import` statements as
 follows:
 
-```
+```Whiley
 method main(std::ascii::string[] args):
    std::io::print("Hello ")
    std::io::println("World")
