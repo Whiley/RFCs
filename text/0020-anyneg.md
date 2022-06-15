@@ -55,7 +55,7 @@ The `any` type is the _top_ type in Whiley's type system and has
   `!(!int&int)`, `!(int&bool)` are all equivalent to `any`.  Thus, the
   following currently compiles:
 
-```
+```Whiley
 function id(any x) -> int|!int:
 	return x
 ```
@@ -74,7 +74,7 @@ The removal of the `any` type itself is straightforward.  However, the
 The removal of types equivalent to `void` is already required and
 implemented.  For example, the following fails to compile:
 
-```
+```Whiley
 type record is { void f }
 ```
 
@@ -88,7 +88,7 @@ type record is { void f }
 
 Likewise, this equivalent form also does not compile:
 
-```
+```Whiley
 type record is { (int&!int) f }
 ```
 
@@ -98,7 +98,7 @@ The removal of negation types is more involved because of their
 involvement in flow typing.  The following illustrates the simplest
 example:
 
-```
+```Whiley
 function f(int|null x) -> int:
     if x is int:
 	   return x
@@ -153,7 +153,7 @@ the union connective.  Some examples:
 Recursive types are not themselves a problem here.  For example,
 consider these recursive types:
 
-```
+```Whiley
 type IntList is null | { IntList next, int data }
 type IntBoolList is null | { IntBoolList next, int|bool data}
 ```
