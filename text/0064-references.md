@@ -17,7 +17,7 @@ References in Whiley are currently implemented as shared variables or
 type `&T` is interpreted as a _reference to a variable of type `T`_.
 The following illustrates:
 
-```
+```Whiley
 &(int[]) p = ...
 // Keep old value
 int[] old = *p
@@ -49,7 +49,7 @@ removes the unknown reference type `&?T`.
 Finally, we note the difference between the representation of a type
 `&int` and `&(int[])`.  For example, consider the following:
 
-```
+```Whiley
 &int p = ...
 // Keep old value
 int old = *p
@@ -95,7 +95,7 @@ In order to implement this proposal, we must make further restrictions
 on variables of reference type.  For example, the following is no
 longer permitted:
 
-```
+```Whiley
 &(int[]) p = ...
 *p = [1,2,3]
 ```
@@ -106,7 +106,7 @@ value `[1,2,3]`.  Furthermore we note that, whilst the following could
 be supported, it will not be permitted at this time (though future
 RFCs may consider supporting it):
 
-```
+```Whiley
 int[] arr = *p
 ```
 
@@ -119,27 +119,27 @@ In all other cases, only partial dereferencing is permitted
 
 The following are all permitted under this RFC:
 
-```
+```Whiley
 &int p = ...
 int old = *p
 *p = 123
 ```
 
-```
+```Whiley
 &{int x} p = ...
 {int x} q = *p
 p.x = 123
 *p = {x:456}
 ```
 
-```
+```Whiley
 &(int[]) p = ...
 assert |p| > 0
 int old = p[0]
 p[0] = 123
 ```
 
-```
+```Whiley
 &{int x, ...} p = ...
 int old = p.x
 p.x = 123
@@ -154,7 +154,7 @@ supported.
 This RFC proposes the introduction of a standard library type,
 `std::box::Box` defined as follows:
 
-```
+```Whiley
 public type Box<T> is &{ T contents }
 ```
 
@@ -162,7 +162,7 @@ This is similar (in some ways) to the type `std::boxed::Box` in Rust
 ([see here](https://doc.rust-lang.org/std/boxed/struct.Box.html)).
 Using this type, we can rewrite our original example as follows:
 
-```
+```Whiley
 Box<int[]> b = ...
 // Read old valud
 int[] old = b.contents
@@ -178,7 +178,7 @@ Finally, we note that references to template types do not support any
 form of dereferencing.  For example, the following is no longer
 permitted under this RFC:
 
-```
+```Whiley
 method get<T>(&T ref) -> T:
    return *ref
 ```
@@ -200,7 +200,7 @@ future, the introduction of type bounds could alleviate this.
 **(Array Reads)**  The following code could, in principle, be supported
 with the current proposal:
 
-```
+```Whiley
 &(int[]) p = ...
 // Read current value
 int[] arr = *p
@@ -212,7 +212,7 @@ supported at a later date should it be deemed useful.  We note,
 however, that this would not apply to open records and, hence, the
 following could never be supported:
 
-```
+```Whiley
 &{int x, ...} p = ...
 // Read current value
 {int x, ...} rec = *p
@@ -226,7 +226,7 @@ considerable cost to all uses of open records.
 **(Array Writes)** Finally, we note the following could (in princple)
   be supported under certain conditions:
 
-```
+```Whiley
 &(int[]) p = ...
 // Write some value
 *p = [1,2,3]
